@@ -122,60 +122,86 @@ function classifyPrizes(treasuresList) {
   return prizes;
 }
 
+// Agrega estatísticas padronizadas a partir de partidas e tesouros extraídos
+function buildPlayerSummary({ player, pcName, matches, treasuresList, overlayTotal, inProgress, sessionText }) {
+  let totalChests = 0;
+  let totalAmmo = 0;
+  let wins = 0;
+  let bestMatch = 0;
+
+  for (const m of matches) {
+    totalChests += m.chests;
+    totalAmmo += m.ammo;
+    if (m.placement === 1) wins++;
+    if (m.chests > bestMatch) bestMatch = m.chests;
+  }
+
+  const matchesCount = matches.length;
+  const avgChests = matchesCount > 0 ? +(totalChests / matchesCount).toFixed(1) : 0;
+  const todayPrefix = new Date().toISOString().slice(0, 10);
+  const todayChests = matches
+    .filter(m => m.date && m.date.startsWith(todayPrefix))
+    .reduce((sum, m) => sum + m.chests, 0);
+  const last5Chests = matches.slice(-5).reduce((sum, m) => sum + m.chests, 0);
+
+  return {
+    id: player.toLowerCase().replace(/[^a-z0-9_-]/g, '_'),
+    player,
+    pcName: pcName || '',
+    totalChests: overlayTotal !== null && overlayTotal > totalChests ? overlayTotal : totalChests,
+    totalAmmo,
+    matchesCount,
+    wins,
+    bestMatch,
+    avgChests,
+    todayChests,
+    last5Chests,
+    treasuresCount: treasuresList.length,
+    treasuresList: treasuresList.slice(-25).reverse(),
+    prizes: classifyPrizes(treasuresList),
+    inProgress: !!inProgress,
+    sessionText: sessionText || '',
+    lastMatch: matchesCount > 0 ? matches[matchesCount - 1] : null,
+    recentMatches: matches.slice(-15).reverse(),
+    lastUpdated: new Date().toISOString(),
+    lastUpdatedMs: Date.now()
+  };
+}
+
 // Parser universal para dados vindos de matches.csv + overlay.html ou payload JSON direto
 function parseChestCounterSubmission(body) {
+  let player = body.player || '';
+  const matches = [];
+  const treasuresList = [];
+
   // Se o cliente enviou matchesCsv bruto (ex: script PowerShell ou upload)
   if (typeof body.matchesCsv === 'string') {
     const lines = body.matchesCsv.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-    let player = body.player || '';
-    let totalChests = 0;
-    let totalAmmo = 0;
-    let matchesCount = 0;
-    let wins = 0;
-    let bestMatch = 0;
-    let treasuresCount = 0;
-    const treasuresList = [];
-    const matches = [];
-
-    // Cabeçalho esperado: date;mode;player;placement;players;chests;ammo_boxes;treasures;file
     for (let i = 1; i < lines.length; i++) {
       const parts = lines[i].split(';');
       if (parts.length < 6) continue;
       const [date, mode, pName, placementStr, playersStr, chestsStr, ammoStr, treasuresStr, replayFile] = parts;
-      const chests = parseInt(chestsStr, 10) || 0;
-      const ammo = parseInt(ammoStr, 10) || 0;
-      const placement = parseInt(placementStr, 10) || 0;
-      const totalPlayers = parseInt(playersStr, 10) || 0;
-
-      if (pName && !player) player = pName;
-      if (pName) player = pName; // pega sempre o nick mais recente
-
-      totalChests += chests;
-      totalAmmo += ammo;
-      matchesCount++;
-      if (placement === 1) wins++;
-      if (chests > bestMatch) bestMatch = chests;
+      if (pName) player = pName;
 
       if (treasuresStr && treasuresStr.trim()) {
-        const items = treasuresStr.split(',').map(s => s.trim()).filter(Boolean);
-        treasuresCount += items.length;
-        items.forEach(item => treasuresList.push({ date, item }));
+        treasuresStr.split(',').map(s => s.trim()).filter(Boolean).forEach(item => {
+          treasuresList.push({ date, item });
+        });
       }
 
       matches.push({
         date,
         mode,
         player: pName,
-        placement,
-        totalPlayers,
-        chests,
-        ammo,
+        placement: parseInt(placementStr, 10) || 0,
+        totalPlayers: parseInt(playersStr, 10) || 0,
+        chests: parseInt(chestsStr, 10) || 0,
+        ammo: parseInt(ammoStr, 10) || 0,
         treasures: treasuresStr || '',
         file: replayFile || ''
       });
     }
 
-    // Extrai estado ao vivo do overlay.html se disponível
     let inProgress = false;
     let sessionText = '';
     let overlayTotal = null;
@@ -188,119 +214,33 @@ function parseChestCounterSubmission(body) {
     }
 
     if (!player) player = body.pcName || 'Jogador Desconhecido';
-
-    const lastMatch = matches.length > 0 ? matches[matches.length - 1] : null;
-    const avgChests = matchesCount > 0 ? +(totalChests / matchesCount).toFixed(1) : 0;
-
-    // Calcula baús de hoje (baseado na data da última partida ou data atual)
-    const todayPrefix = new Date().toISOString().slice(0, 10);
-    const todayChests = matches
-      .filter(m => m.date && m.date.startsWith(todayPrefix))
-      .reduce((sum, m) => sum + m.chests, 0);
-
-    // Últimas 5 partidas (total de baús na sessão recente)
-    const last5Chests = matches.slice(-5).reduce((sum, m) => sum + m.chests, 0);
-
-    return {
-      id: player.toLowerCase().replace(/[^a-z0-9_-]/g, '_'),
-      player,
-      pcName: body.pcName || '',
-      totalChests: overlayTotal !== null && overlayTotal > totalChests ? overlayTotal : totalChests,
-      totalAmmo,
-      matchesCount,
-      wins,
-      bestMatch,
-      avgChests,
-      todayChests,
-      last5Chests,
-      treasuresCount,
-      treasuresList: treasuresList.slice(-25).reverse(),
-      prizes: classifyPrizes(treasuresList),
-      inProgress,
-      sessionText,
-      lastMatch,
-      recentMatches: matches.slice(-15).reverse(),
-      lastUpdated: new Date().toISOString(),
-      lastUpdatedMs: Date.now()
-    };
+    return buildPlayerSummary({ player, pcName: body.pcName, matches, treasuresList, overlayTotal, inProgress, sessionText });
   }
 
   // Se enviou o data.json completo do ChestCounter
   if (body.Matches && Array.isArray(body.Matches)) {
-    let player = body.player || '';
-    let totalChests = 0;
-    let totalAmmo = 0;
-    let matchesCount = 0;
-    let wins = 0;
-    let bestMatch = 0;
-    let treasuresCount = 0;
-    const treasuresList = [];
-    const matches = [];
-
     for (const m of body.Matches) {
       if (!m.IsBattleRoyale && m.ChestsOpened === 0) continue;
-      const pName = m.PlayerName || '';
-      if (pName) player = pName;
-      const chests = m.ChestsOpened || 0;
-      const ammo = m.AmmoBoxesOpened || 0;
-      const placement = m.Placement || 0;
+      if (m.PlayerName) player = m.PlayerName;
       const dateStr = (m.MatchStartUtc || '').replace('T', ' ').slice(0, 16);
-
-      totalChests += chests;
-      totalAmmo += ammo;
-      matchesCount++;
-      if (placement === 1) wins++;
-      if (chests > bestMatch) bestMatch = chests;
-
       const tFinds = Array.isArray(m.TreasureFinds) ? m.TreasureFinds : [];
-      treasuresCount += tFinds.length;
-      const tNames = tFinds.map(t => t.ItemId || t.Kind || 'Treasure').join(', ');
       tFinds.forEach(t => treasuresList.push({ date: dateStr, item: t.ItemId || 'Treasure' }));
 
       matches.push({
         date: dateStr,
         mode: m.Playlist || 'Battle Royale',
-        player: pName,
-        placement,
+        player: m.PlayerName || '',
+        placement: m.Placement || 0,
         totalPlayers: m.TotalPlayers || 80,
-        chests,
-        ammo,
-        treasures: tNames,
+        chests: m.ChestsOpened || 0,
+        ammo: m.AmmoBoxesOpened || 0,
+        treasures: tFinds.map(t => t.ItemId || t.Kind || 'Treasure').join(', '),
         file: m.ReplayFile || ''
       });
     }
 
     if (!player) player = body.pcName || 'Jogador Desconhecido';
-    const lastMatch = matches.length > 0 ? matches[matches.length - 1] : null;
-    const avgChests = matchesCount > 0 ? +(totalChests / matchesCount).toFixed(1) : 0;
-    const todayPrefix = new Date().toISOString().slice(0, 10);
-    const todayChests = matches
-      .filter(m => m.date && m.date.startsWith(todayPrefix))
-      .reduce((sum, m) => sum + m.chests, 0);
-    const last5Chests = matches.slice(-5).reduce((sum, m) => sum + m.chests, 0);
-
-    return {
-      id: player.toLowerCase().replace(/[^a-z0-9_-]/g, '_'),
-      player,
-      pcName: body.pcName || '',
-      totalChests,
-      totalAmmo,
-      matchesCount,
-      wins,
-      bestMatch,
-      avgChests,
-      todayChests,
-      last5Chests,
-      treasuresCount,
-      treasuresList: treasuresList.slice(-25).reverse(),
-      prizes: classifyPrizes(treasuresList),
-      inProgress: false,
-      sessionText: '',
-      lastMatch,
-      recentMatches: matches.slice(-15).reverse(),
-      lastUpdated: new Date().toISOString(),
-      lastUpdatedMs: Date.now()
-    };
+    return buildPlayerSummary({ player, pcName: body.pcName, matches, treasuresList, overlayTotal: null, inProgress: false, sessionText: '' });
   }
 
   return null;
@@ -573,7 +513,11 @@ const server = http.createServer((req, res) => {
     let body = '';
     req.on('data', chunk => {
       body += chunk.toString('utf8');
-      if (body.length > 15 * 1024 * 1024) req.destroy(); // limite 15MB
+      if (body.length > 15 * 1024 * 1024) {
+        res.writeHead(413, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'Payload muito grande (limite 15MB).' }));
+        return req.destroy();
+      }
     });
     req.on('end', () => {
       try {
@@ -657,6 +601,7 @@ const server = http.createServer((req, res) => {
 });
 
 // Inicia túnel público gratuito na internet via Cloudflare Tunnel (cloudflared.exe)
+let sshAttempts = 0;
 function startPublicTunnel() {
   const cfPath = path.join(__dirname, 'cloudflared.exe');
   if (fs.existsSync(cfPath)) {
@@ -730,7 +675,13 @@ function startPublicTunnel() {
   ssh.on('close', () => {
     db.publicUrl = null;
     broadcastUpdate();
-    setTimeout(startPublicTunnel, 5000);
+    if (sshAttempts < 5) {
+      sshAttempts++;
+      const delay = Math.min(30000, 5000 * Math.pow(2, sshAttempts - 1));
+      setTimeout(startPublicTunnel, delay);
+    } else {
+      console.log('[!] Limite de tentativas do tunel SSH atingido. Reinicie o servidor se desejar tentar novamente.');
+    }
   });
 }
 
