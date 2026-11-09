@@ -1,0 +1,9 @@
+# Binários pesados baixados dinamicamente
+cloudflared.exe
+ChestCounter.exe
+
+# Dados locais e logs
+ranking_db.json
+*.log
+.DS_Store
+Thumbs.db
