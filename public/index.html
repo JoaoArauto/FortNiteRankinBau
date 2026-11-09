@@ -748,7 +748,7 @@
       {
         key: 'goldOutfit',
         icon: '👑',
-        name: 'Traje Dourado',
+        name: 'Traje Dourado (Lil Uzi Vert)',
         baseDenom: 1562500,
         thBoost: 10,
         canRepeat: false
@@ -765,7 +765,7 @@
       {
         key: 'vehicle',
         icon: '🚗',
-        name: 'Veículo',
+        name: 'Veículo (Cadillac CT5-V)',
         baseDenom: 7813,
         thBoost: 10,
         canRepeat: false
@@ -773,7 +773,7 @@
       {
         key: 'pickaxe',
         icon: '⛏️',
-        name: 'Picareta',
+        name: 'Picareta / Acessório Costas',
         baseDenom: 568,
         thBoost: 1,
         canRepeat: false
@@ -781,7 +781,7 @@
       {
         key: 'jamTrack',
         icon: '🎵',
-        name: 'Música (Jam)',
+        name: 'Música ("London")',
         baseDenom: 391,
         thBoost: 1,
         canRepeat: false
@@ -789,7 +789,7 @@
       {
         key: 'loadingScreen',
         icon: '🖼️',
-        name: 'Tela de Carregamento',
+        name: 'Tela ("So Kawaii")',
         baseDenom: 272,
         thBoost: 1,
         canRepeat: false
@@ -899,16 +899,18 @@
 
       const thBtn = document.getElementById('thBtn');
       const thTxt = document.getElementById('thStatusTxt');
-      if (isTH) {
-        thBtn.classList.add('active');
-        thTxt.textContent = mode === 'auto'
-          ? `ATIVA (${formatDurationShort(sched.remainingMs)})`
-          : `LIGADA (MANUAL)`;
-      } else {
-        thBtn.classList.remove('active');
-        thTxt.textContent = mode === 'auto'
-          ? `SÁB (${formatDurationShort(sched.nextInMs)})`
-          : `DESLIGADA`;
+      if (thBtn && thTxt) {
+        if (isTH) {
+          thBtn.classList.add('active');
+          thTxt.textContent = mode === 'auto'
+            ? `ATIVA (${formatDurationShort(sched.remainingMs)})`
+            : `LIGADA (MANUAL)`;
+        } else {
+          thBtn.classList.remove('active');
+          thTxt.textContent = mode === 'auto'
+            ? `SÁB (${formatDurationShort(sched.nextInMs)})`
+            : `DESLIGADA`;
+        }
       }
 
       const autoDetected = {
@@ -955,25 +957,27 @@
       const psNextP = psObtained ? 1 : (psBaseP / Math.max(0.0001, 1 - removedProbSum));
       const psEffDenom = Math.round(1 / psNextP);
 
+      const nextChestNumber = totalChests + 1;
       // Chance de obter a Loja Pirata ao abrir N baús (sob as probabilidades atuais)
       const cumulProb = 1 - Math.pow(1 - psNextP, totalChests);
 
-      document.getElementById('psOddsBadge').textContent = psObtained
-        ? 'CONQUISTADO'
-        : `1 / ${psEffDenom.toLocaleString('pt-BR')}`;
+      const elOdds = document.getElementById('psOddsBadge');
+      if (elOdds) elOdds.textContent = psObtained ? 'CONQUISTADO' : `1 / ${psEffDenom.toLocaleString('pt-BR')}`;
 
-      document.getElementById('psNextChestPct').textContent = psObtained
-        ? '100% (OBTIDO)'
-        : `${(psNextP * 100).toFixed(6).replace('.', ',')}%`;
+      const elNextPct = document.getElementById('psNextChestPct');
+      if (elNextPct) elNextPct.textContent = psObtained ? '100% (OBTIDO)' : `${(psNextP * 100).toFixed(6).replace('.', ',')}%`;
 
-      document.getElementById('psNextChestLbl').textContent = psObtained
-        ? 'META CONCLUÍDA'
-        : `CHANCE NO PRÓXIMO BAÚ (#${nextChestNumber})`;
+      const elNextLbl = document.getElementById('psNextChestLbl');
+      if (elNextLbl) elNextLbl.textContent = psObtained ? 'META CONCLUÍDA' : `CHANCE NO PRÓXIMO BAÚ (#${nextChestNumber})`;
 
-      document.getElementById('psCumulPct').textContent = `${(cumulProb * 100).toFixed(4).replace('.', ',')}%`;
-      document.getElementById('psChestsUsed').textContent = totalChests.toLocaleString('pt-BR');
+      const elCumul = document.getElementById('psCumulPct');
+      if (elCumul) elCumul.textContent = `${(cumulProb * 100).toFixed(4).replace('.', ',')}%`;
+
+      const elChestsUsed = document.getElementById('psChestsUsed');
+      if (elChestsUsed) elChestsUsed.textContent = totalChests.toLocaleString('pt-BR');
 
       const chkContainer = document.getElementById('checklistContainer');
+      if (!chkContainer) return;
       chkContainer.innerHTML = PRIZE_DEFS.map(def => {
         const done = isObtained(def.key);
         const effDenom = Math.round(def.baseDenom / (isTH ? def.thBoost : 1));
@@ -1031,7 +1035,11 @@
       document.getElementById('sumBestMatch').textContent = bestMatch;
       document.getElementById('sumTreasures').textContent = totalTreasures;
 
-      renderChecklist(players, totalChests);
+      try {
+        renderChecklist(players, totalChests);
+      } catch (err) {
+        console.error('Erro ao renderizar checklist:', err);
+      }
 
       const footerEl = document.getElementById('statusFooter');
       if (footerEl && currentState.updatedAt) {
@@ -1122,6 +1130,16 @@
       ev.target.value = '';
     });
 
+    async function loadRanking() {
+      try {
+        const res = await fetch('/api/ranking', { headers: { 'Bypass-Tunnel-Reminder': 'true' } });
+        if (res.ok) {
+          currentState = await res.json();
+          render();
+        }
+      } catch (e) {}
+    }
+
     function connectStream() {
       const es = new EventSource('/api/stream');
       es.onmessage = (event) => {
@@ -1136,8 +1154,9 @@
       };
     }
 
+    loadRanking();
     connectStream();
-    setInterval(render, 30000);
+    setInterval(loadRanking, 5000);
   </script>
 </body>
 </html>

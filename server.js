@@ -102,17 +102,17 @@ function classifyPrizes(treasuresList) {
   for (const t of (treasuresList || [])) {
     const raw = (typeof t === 'string' ? t : (t.item || '')).toLowerCase();
     if (!raw) continue;
-    if (raw.includes('loading screen') || raw.includes('plunder in paradise') || raw.includes('dpid_item2')) {
+    if (raw.includes('loading screen') || raw.includes('plunder in paradise') || raw.includes('so kawaii') || raw.includes('dpid_item2') || raw.includes('dpid_item17')) {
       prizes.loadingScreen = true;
-    } else if (raw.includes('music track') || raw.includes('jam track') || raw.includes('no trespassing') || raw.includes('dpid_item4')) {
+    } else if (raw.includes('music track') || raw.includes('jam track') || raw.includes('no trespassing') || raw.includes('london') || raw.includes('dpid_item4') || raw.includes('dpid_item16')) {
       prizes.jamTrack = true;
     } else if (raw.includes('pickaxe') || raw.includes('gauntlet') || raw.includes('dpid_item1')) {
       prizes.pickaxe = true;
-    } else if (raw.includes('vehicle') || raw.includes('mercedes') || raw.includes('dpid_item3')) {
+    } else if (raw.includes('vehicle') || raw.includes('mercedes') || raw.includes('cadillac') || raw.includes('dpid_item3') || raw.includes('dpid_item15')) {
       prizes.vehicle = true;
     } else if (raw.includes('pirate shop') || raw.includes('shop')) {
       prizes.pirateShop = true;
-    } else if (raw.includes('gold outfit') || raw.includes('outfit') || raw.includes('skin')) {
+    } else if (raw.includes('gold outfit') || raw.includes('outfit') || raw.includes('skin') || raw.includes('uzi')) {
       prizes.goldOutfit = true;
     } else {
       // Gizmos (Treasure gizmo, Golden firework, Extraction accelerator, etc.) podem repetir
@@ -207,8 +207,8 @@ function parseChestCounterSubmission(body) {
     let overlayTotal = null;
     if (typeof body.overlayHtml === 'string' && body.overlayHtml) {
       inProgress = /MATCH IN PROGRESS/i.test(body.overlayHtml);
-      const totMatch = body.overlayHtml.match(/class="big total">(\d+)</i);
-      if (totMatch) overlayTotal = parseInt(totMatch[1], 10);
+      const totMatch = body.overlayHtml.match(/class="big total">([0-9.,]+)</i);
+      if (totMatch) overlayTotal = parseInt(totMatch[1].replace(/[,.]/g, ''), 10);
       const sessMatch = body.overlayHtml.match(/<span>Session<\/span><b>([^<]+)<small>([^<]+)<\/small><\/b>/i);
       if (sessMatch) sessionText = `${sessMatch[1].trim()} (${sessMatch[2].replace(/&#183;/g, '·').trim()})`;
     }
@@ -331,7 +331,7 @@ if (-not (Test-Path $exeInDownloads)) {
   foreach ($u in $dlUrls) {
     try {
       Write-Host "[*] Baixando ChestCounter.exe automaticamente para seus Downloads (aguarde ~10s)..." -ForegroundColor Yellow
-      Invoke-WebRequest -Uri "$u/api/download-exe" -OutFile $exeInDownloads -TimeoutSec 120
+      Invoke-WebRequest -Uri "$u/api/download-exe" -Headers @{ 'Bypass-Tunnel-Reminder' = 'true' } -OutFile $exeInDownloads -TimeoutSec 120
       if ((Test-Path $exeInDownloads) -and ((Get-Item $exeInDownloads).Length -gt 1000000)) {
         Write-Host "[+] ChestCounter.exe baixado com sucesso em $exeInDownloads!" -ForegroundColor Green
         break
@@ -366,7 +366,7 @@ while ($true) {
 
     foreach ($u in $urls) {
       try {
-        $resp = Invoke-RestMethod -Uri "$u/api/submit" -Method Post -Body $bytes -ContentType 'application/json; charset=utf-8' -TimeoutSec 7
+        $resp = Invoke-RestMethod -Uri "$u/api/submit" -Headers @{ 'Bypass-Tunnel-Reminder' = 'true' } -Method Post -Body $bytes -ContentType 'application/json; charset=utf-8' -TimeoutSec 7
         $time = Get-Date -Format 'HH:mm:ss'
         Write-Host "[$time] Sincronizado! Nick: $($resp.player) | Total de Baus: $($resp.totalChests) | Partidas: $($resp.matchesCount)" -ForegroundColor Green
         $sent = $true
@@ -591,7 +591,12 @@ const server = http.createServer((req, res) => {
   if (req.method === 'GET' && (pathname === '/' || pathname === '/index.html')) {
     const htmlPath = path.join(__dirname, 'public', 'index.html');
     if (fs.existsSync(htmlPath)) {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
       return res.end(fs.readFileSync(htmlPath, 'utf8'));
     }
   }
@@ -600,12 +605,60 @@ const server = http.createServer((req, res) => {
   res.end('Não encontrado');
 });
 
-// Inicia túnel público gratuito na internet via Cloudflare Tunnel (cloudflared.exe)
+// Inicia túnel público para acesso via Internet (com link estático fixo!)
 let sshAttempts = 0;
-function startPublicTunnel() {
+let tunnelInstance = null;
+
+async function startStaticLocalTunnel() {
+  const subdomain = process.env.TUNNEL_SUBDOMAIN || 'thenutellas-ranking';
+  console.log(`[*] Iniciando link publico ESTATICO na internet (subdominio: ${subdomain})...`);
+  try {
+    const localtunnel = require('localtunnel');
+    tunnelInstance = await localtunnel({ port: PORT, subdomain });
+    db.publicUrl = tunnelInstance.url;
+    publishUrlToCloud(db.publicUrl);
+    console.log(`\n========================================================`);
+    console.log(`  LINK PUBLICO ESTATICO (INTERNET): ${db.publicUrl}`);
+    console.log(`  (Link fixo para OBS Studio e amigos!)`);
+    console.log(`========================================================\n`);
+    try {
+      fs.writeFileSync(path.join(__dirname, 'connectr.bat'), generateFriendBatScript(db.publicUrl).replace(/\r?\n/g, '\r\n'), 'utf8');
+    } catch (e) {}
+    broadcastUpdate();
+
+    tunnelInstance.on('close', () => {
+      console.log('[!] Tunel estatico desconectado. Reconectando em 5 segundos...');
+      setTimeout(startPublicTunnel, 5000);
+    });
+    tunnelInstance.on('error', (err) => {
+      console.error('[!] Erro no tunel estatico:', err.message);
+    });
+    return true;
+  } catch (err) {
+    console.log('[!] Falha ao iniciar link estatico via localtunnel:', err.message);
+    return false;
+  }
+}
+
+async function startPublicTunnel() {
+  // 1. Suporte a Cloudflare Named Tunnel se houver token configurado
+  const tokenFile = path.join(__dirname, 'tunnel_token.txt');
+  const cfToken = process.env.CLOUDFLARE_TUNNEL_TOKEN || (fs.existsSync(tokenFile) ? fs.readFileSync(tokenFile, 'utf8').trim() : '');
   const cfPath = path.join(__dirname, 'cloudflared.exe');
+
+  if (cfToken && fs.existsSync(cfPath)) {
+    console.log('[*] Iniciando Cloudflare Tunnel dedicado com Token...');
+    spawn(cfPath, ['tunnel', 'run', '--token', cfToken], { stdio: 'inherit' });
+    return;
+  }
+
+  // 2. Link público estático via localtunnel (subdomínio fixo)
+  const ok = await startStaticLocalTunnel();
+  if (ok) return;
+
+  // 3. Fallback: Cloudflare quick tunnel temporário
   if (fs.existsSync(cfPath)) {
-    console.log('[*] Criando link publico estavel na internet (via Cloudflare Tunnel)...');
+    console.log('[*] Criando link publico na internet (via Cloudflare Quick Tunnel)...');
     const cf = spawn(cfPath, ['tunnel', '--url', `http://127.0.0.1:${PORT}`], {
       stdio: ['ignore', 'pipe', 'pipe']
     });
