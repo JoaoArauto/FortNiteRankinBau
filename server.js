@@ -605,46 +605,15 @@ const server = http.createServer((req, res) => {
   res.end('Não encontrado');
 });
 
-// Inicia túnel público para acesso via Internet (com link estático fixo!)
+// Inicia túnel público para acesso via Internet
 let sshAttempts = 0;
-let tunnelInstance = null;
-
-async function startStaticLocalTunnel() {
-  const subdomain = process.env.TUNNEL_SUBDOMAIN || 'thenutellas-ranking';
-  console.log(`[*] Iniciando link publico ESTATICO na internet (subdominio: ${subdomain})...`);
-  try {
-    const localtunnel = require('localtunnel');
-    tunnelInstance = await localtunnel({ port: PORT, subdomain });
-    db.publicUrl = tunnelInstance.url;
-    publishUrlToCloud(db.publicUrl);
-    console.log(`\n========================================================`);
-    console.log(`  LINK PUBLICO ESTATICO (INTERNET): ${db.publicUrl}`);
-    console.log(`  (Link fixo para OBS Studio e amigos!)`);
-    console.log(`========================================================\n`);
-    try {
-      fs.writeFileSync(path.join(__dirname, 'connectr.bat'), generateFriendBatScript(db.publicUrl).replace(/\r?\n/g, '\r\n'), 'utf8');
-    } catch (e) {}
-    broadcastUpdate();
-
-    tunnelInstance.on('close', () => {
-      console.log('[!] Tunel estatico desconectado. Reconectando em 5 segundos...');
-      setTimeout(startPublicTunnel, 5000);
-    });
-    tunnelInstance.on('error', (err) => {
-      console.error('[!] Erro no tunel estatico:', err.message);
-    });
-    return true;
-  } catch (err) {
-    console.log('[!] Falha ao iniciar link estatico via localtunnel:', err.message);
-    return false;
-  }
-}
 
 async function startPublicTunnel() {
+  const cfPath = path.join(__dirname, 'cloudflared.exe');
+
   // 1. Suporte a Cloudflare Named Tunnel se houver token configurado
   const tokenFile = path.join(__dirname, 'tunnel_token.txt');
   const cfToken = process.env.CLOUDFLARE_TUNNEL_TOKEN || (fs.existsSync(tokenFile) ? fs.readFileSync(tokenFile, 'utf8').trim() : '');
-  const cfPath = path.join(__dirname, 'cloudflared.exe');
 
   if (cfToken && fs.existsSync(cfPath)) {
     console.log('[*] Iniciando Cloudflare Tunnel dedicado com Token...');
@@ -652,13 +621,9 @@ async function startPublicTunnel() {
     return;
   }
 
-  // 2. Link público estático via localtunnel (subdomínio fixo)
-  const ok = await startStaticLocalTunnel();
-  if (ok) return;
-
-  // 3. Fallback: Cloudflare quick tunnel temporário
+  // 2. Cloudflare Quick Tunnel (altamente estável, sem erro 503)
   if (fs.existsSync(cfPath)) {
-    console.log('[*] Criando link publico na internet (via Cloudflare Quick Tunnel)...');
+    console.log('[*] Criando link publico estavel na internet (via Cloudflare)...');
     const cf = spawn(cfPath, ['tunnel', '--url', `http://127.0.0.1:${PORT}`], {
       stdio: ['ignore', 'pipe', 'pipe']
     });
@@ -671,8 +636,8 @@ async function startPublicTunnel() {
           db.publicUrl = match[0];
           publishUrlToCloud(db.publicUrl);
           console.log(`\n========================================================`);
-          console.log(`  LINK PUBLICO (INTERNET): ${db.publicUrl}`);
-          console.log(`  (Sincronizado automaticamente com todos os connectr.bat!)`);
+          console.log(`  LINK PUBLICO AO VIVO: ${db.publicUrl}`);
+          console.log(`  (Link sempre atualizado automaticamente no GitHub / connectr!)`);
           console.log(`========================================================\n`);
           try {
             fs.writeFileSync(path.join(__dirname, 'connectr.bat'), generateFriendBatScript(db.publicUrl).replace(/\r?\n/g, '\r\n'), 'utf8');
@@ -692,6 +657,8 @@ async function startPublicTunnel() {
     });
     return;
   }
+
+  // 3. Fallback alternativo via SSH se cloudflared não estiver disponível
 
   console.log('[*] Criando link publico na internet (via localhost.run)...');
   const sshBin = fs.existsSync('C:\\Windows\\System32\\OpenSSH\\ssh.exe')
