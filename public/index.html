@@ -595,6 +595,142 @@
       color: var(--muted);
       text-transform: uppercase;
     }
+    /* ==========================================
+       BOTAO FLUTUANTE OBS & MODAL
+       ========================================== */
+    .obs-floating {
+      position: fixed;
+      bottom: 18px;
+      right: 18px;
+      z-index: 9999;
+    }
+
+    .obs-fab-btn {
+      background: var(--hud-highlight);
+      color: #0b0c10;
+      font-family: "Barlow Condensed", sans-serif;
+      font-size: 15px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      padding: 9px 18px;
+      transform: skewX(-8deg);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.7);
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    .obs-fab-btn:hover {
+      background: #ffe066;
+      transform: skewX(-8deg) scale(1.05);
+    }
+
+    .obs-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(5px);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .obs-modal-backdrop.active {
+      display: flex;
+    }
+
+    .obs-modal-card {
+      background: #0f121b;
+      border: 2px solid rgba(250, 204, 21, 0.5);
+      border-radius: 4px;
+      max-width: 500px;
+      width: 100%;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.85);
+      transform: skewX(-2deg);
+    }
+
+    .obs-modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--hud-highlight);
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--hud-border);
+      padding-bottom: 10px;
+    }
+
+    .obs-modal-sub {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .obs-link-row {
+      background: var(--hud-row);
+      border: 1px solid var(--hud-border);
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ol-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .ol-title {
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--text);
+      text-transform: uppercase;
+    }
+
+    .ol-desc {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .ol-copy-btn {
+      background: rgba(250, 204, 21, 0.16);
+      border: 1px solid rgba(250, 204, 21, 0.6);
+      color: var(--hud-highlight);
+      font-family: "Barlow Condensed", sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 7px 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      transform: skewX(-5deg);
+      transition: all 0.15s ease;
+    }
+
+    .ol-copy-btn:hover {
+      background: rgba(250, 204, 21, 0.35);
+      color: #fff;
+    }
+
+    .ol-copy-btn.copied {
+      background: #22c55e !important;
+      border-color: #22c55e !important;
+      color: #0b0c10 !important;
+    }
   </style>
 </head>
 <body>
@@ -683,6 +819,48 @@
       <div class="footer-bar">
         <span>PRÊMIOS ÚNICOS NÃO REPETEM (EXCETO BUGIGANGA)</span>
         <span class="hide-obs">CLIQUE PARA MARCAR</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTAO FLUTUANTE NO CANTO DA TELA: LINKS OBS -->
+  <div class="obs-floating hide-obs">
+    <button class="obs-fab-btn" onclick="toggleObsModal()" title="Links para OBS Studio (Browser Source)">
+      🎥 LINKS DO OBS
+    </button>
+  </div>
+
+  <!-- MODAL COM OS LINKS DOS WIDGETS -->
+  <div id="obsModal" class="obs-modal-backdrop hide-obs" onclick="if(event.target===this) toggleObsModal()">
+    <div class="obs-modal-card">
+      <div class="obs-modal-head">
+        <span>🎥 LINKS PARA OBS STUDIO (OVERLAYS)</span>
+        <button class="icon-btn" onclick="toggleObsModal()">✕</button>
+      </div>
+      <p class="obs-modal-sub">Cole no OBS Studio em <b>Adicionar > Navegador (Browser Source)</b> com fundo transparente:</p>
+      
+      <div class="obs-link-row">
+        <div class="ol-info">
+          <span class="ol-title">🧰 PAINEL COMPLETO (HUD)</span>
+          <span class="ol-desc">Ranking + Metas Loja Pirata · Tam: 1120 × 520</span>
+        </div>
+        <button class="ol-copy-btn" onclick="copyObsUrl('', this)">COPIAR LINK</button>
+      </div>
+
+      <div class="obs-link-row">
+        <div class="ol-info">
+          <span class="ol-title">🏆 APENAS RANKING DE BAÚS</span>
+          <span class="ol-desc">Lista dos jogadores ao vivo · Tam: 540 × 480</span>
+        </div>
+        <button class="ol-copy-btn" onclick="copyObsUrl('&widget=ranking', this)">COPIAR LINK</button>
+      </div>
+
+      <div class="obs-link-row">
+        <div class="ol-info">
+          <span class="ol-title">🏴‍☠️ APENAS METAS DA LOJA PIRATA</span>
+          <span class="ol-desc">Checklist e odds do próximo baú · Tam: 540 × 520</span>
+        </div>
+        <button class="ol-copy-btn" onclick="copyObsUrl('&widget=checklist', this)">COPIAR LINK</button>
       </div>
     </div>
   </div>
