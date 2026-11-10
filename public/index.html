@@ -623,7 +623,7 @@
         </div>
 
         <div class="mini-actions">
-          <a id="downloadBatBtn" href="/api/download-client" class="icon-btn primary" title="Baixar connectr.bat (instala e abre o ChestCounter.exe sozinho)">
+          <a id="downloadBatBtn" href="connectr.bat" download="connectr.bat" onclick="downloadConnectr(event)" class="icon-btn primary" title="Baixar connectr.bat (abre o ChestCounter.exe e sincroniza)">
             ⬇ BAIXAR CONNECTR
           </a>
           <button class="icon-btn" onclick="copyShareLink(this)" title="Copiar link">🔗</button>
@@ -823,12 +823,29 @@
     function getShareUrl() {
       if (currentState.publicUrl) return currentState.publicUrl;
       if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        return window.location.origin;
+        return window.location.origin + window.location.pathname;
       }
       if (currentState.localUrls && currentState.localUrls.length > 0) {
         return currentState.localUrls[0];
       }
       return window.location.origin;
+    }
+
+    function downloadConnectr(e) {
+      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        e.preventDefault();
+        fetch('connectr.bat')
+          .then(res => { if (!res.ok) throw new Error(); return res.blob(); })
+          .then(blob => {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'connectr.bat';
+            a.click();
+          })
+          .catch(() => {
+            window.location.href = 'https://raw.githubusercontent.com/JoaoArauto/FortNiteRankinBau/main/connectr.bat';
+          });
+      }
     }
 
     function copyShareLink(btn) {
@@ -1022,7 +1039,14 @@
     function render() {
       const shareUrl = getShareUrl();
       const dlBtn = document.getElementById('downloadBatBtn');
-      if (dlBtn) dlBtn.href = `/api/download-client?server=${encodeURIComponent(shareUrl)}`;
+      if (dlBtn) {
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          dlBtn.href = `/api/download-client?server=${encodeURIComponent(shareUrl)}`;
+        } else {
+          dlBtn.href = 'connectr.bat';
+          dlBtn.setAttribute('download', 'connectr.bat');
+        }
+      }
 
       const players = [...(currentState.players || [])];
       players.sort((a, b) => (b[currentSort] || 0) - (a[currentSort] || 0));
