@@ -246,20 +246,7 @@ async function syncData() {
     // 2. Broadcast instantâneo para a nuvem (GitHub Pages e OBS recebem em 0.5s)
     broadcastToCloud(summary);
 
-    // 3. Push para o repositório GitHub se o Git estiver disponível
-    try {
-      if (fs.existsSync(path.join(repoDir, '.git'))) {
-        execSync('git add ranking_db.json index.html public/index.html', { cwd: repoDir, stdio: 'ignore' });
-        const status = execSync('git status --porcelain', { cwd: repoDir, encoding: 'utf8' });
-        if (status.includes('ranking_db.json')) {
-          execSync(`git commit -m "sync: ${summary.player} (${summary.totalChests} baus)"`, { cwd: repoDir, stdio: 'ignore' });
-          console.log(`[*] Enviando estatisticas para o GitHub...`);
-          execSync('git push origin main', { cwd: repoDir, stdio: 'ignore' });
-          console.log(`[+] SINCRONIZADO COM GITHUB COM SUCESSO! Site e OBS atualizados ao vivo!\n`);
-        }
-      }
-    } catch (gitErr) {}
-
+    // 3. Git push removido: banco separado da nuvem
     lastCsvHash = currentHash;
   } catch (err) {
     console.error('[!] Erro ao processar:', err.message);

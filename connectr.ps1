@@ -267,18 +267,7 @@ function Sync-ChestData {
                     $dbObj.updatedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
                     $dbObj | ConvertTo-Json -Depth 8 | Set-Content $dbFile -Encoding UTF8
 
-                    if ((Test-Path (Join-Path $repoDir '.git')) -and ($now - $script:lastGitPushMs -gt 15000)) {
-                        $script:lastGitPushMs = $now
-                        Push-Location $repoDir
-                        git add ranking_db.json index.html public/index.html 2>$null
-                        $status = git status --porcelain
-                        if ($status -match 'ranking_db\.json') {
-                            git commit -m "sync: ranking atualizado ($player e amigos)" 2>$null
-                            git push origin main 2>$null
-                            Write-Host "[+] Atualizado no GitHub Pages com sucesso!`n" -ForegroundColor Cyan
-                        }
-                        Pop-Location
-                    }
+
                 }
             } catch {}
         }
