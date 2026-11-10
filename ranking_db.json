@@ -3,47 +3,35 @@
                     "thenutellas":  {
                                         "id":  "thenutellas",
                                         "player":  "TheNutellas",
-                                        "pcName":  "Pet-Station",
+                                        "pcName":  "PET-STATION",
                                         "totalChests":  1434,
                                         "totalAmmo":  387,
                                         "matchesCount":  83,
                                         "wins":  24,
                                         "bestMatch":  61,
                                         "avgChests":  17.3,
-                                        "todayChests":  0,
+                                        "todayChests":  189,
                                         "last5Chests":  94,
                                         "treasuresCount":  14,
                                         "treasuresList":  [
                                                               {
-                                                                  "date":  "2026-11-09 20:14",
+                                                                  "date":  "2026-11-07 01:37",
+                                                                  "item":  "Plunder in Paradise (loading screen)"
+                                                              },
+                                                              {
+                                                                  "date":  "2026-11-07 11:16",
                                                                   "item":  "Treasure gizmo"
                                                               },
                                                               {
-                                                                  "date":  "2026-11-08 23:04",
-                                                                  "item":  "Treasure gizmo"
-                                                              },
-                                                              {
-                                                                  "date":  "2026-11-08 20:46",
+                                                                  "date":  "2026-11-07 18:40",
                                                                   "item":  "Extraction accelerator"
                                                               },
                                                               {
-                                                                  "date":  "2026-11-08 16:36",
-                                                                  "item":  "Golden chest reward"
+                                                                  "date":  "2026-11-07 20:21",
+                                                                  "item":  "Mercedes-AMG G 63 (vehicle) ?"
                                                               },
                                                               {
-                                                                  "date":  "2026-11-08 16:18",
-                                                                  "item":  "Golden chest reward"
-                                                              },
-                                                              {
-                                                                  "date":  "2026-11-08 06:24",
-                                                                  "item":  "Treasure gizmo"
-                                                              },
-                                                              {
-                                                                  "date":  "2026-11-08 01:49",
-                                                                  "item":  "Golden firework"
-                                                              },
-                                                              {
-                                                                  "date":  "2026-11-07 22:21",
+                                                                  "date":  "2026-11-07 21:07",
                                                                   "item":  "Treasure gizmo"
                                                               },
                                                               {
@@ -51,24 +39,36 @@
                                                                   "item":  "No Trespassing (music track)"
                                                               },
                                                               {
-                                                                  "date":  "2026-11-07 21:07",
+                                                                  "date":  "2026-11-07 22:21",
                                                                   "item":  "Treasure gizmo"
                                                               },
                                                               {
-                                                                  "date":  "2026-11-07 20:21",
-                                                                  "item":  "Mercedes-AMG G 63 (vehicle) ?"
+                                                                  "date":  "2026-11-08 01:49",
+                                                                  "item":  "Golden firework"
                                                               },
                                                               {
-                                                                  "date":  "2026-11-07 18:40",
+                                                                  "date":  "2026-11-08 06:24",
+                                                                  "item":  "Treasure gizmo"
+                                                              },
+                                                              {
+                                                                  "date":  "2026-11-08 16:18",
+                                                                  "item":  "Golden chest reward"
+                                                              },
+                                                              {
+                                                                  "date":  "2026-11-08 16:36",
+                                                                  "item":  "Golden chest reward"
+                                                              },
+                                                              {
+                                                                  "date":  "2026-11-08 20:46",
                                                                   "item":  "Extraction accelerator"
                                                               },
                                                               {
-                                                                  "date":  "2026-11-07 11:16",
+                                                                  "date":  "2026-11-08 23:04",
                                                                   "item":  "Treasure gizmo"
                                                               },
                                                               {
-                                                                  "date":  "2026-11-07 01:37",
-                                                                  "item":  "Plunder in Paradise (loading screen)"
+                                                                  "date":  "2026-11-09 20:14",
+                                                                  "item":  "Treasure gizmo"
                                                               }
                                                           ],
                                         "prizes":  {
@@ -80,7 +80,7 @@
                                                        "loadingScreen":  true,
                                                        "gizmosCount":  11
                                                    },
-                                        "inProgress":  false,
+                                        "inProgress":  true,
                                         "sessionText":  "185 chests (8 matches · avg. 23)",
                                         "lastMatch":  {
                                                           "date":  "2026-11-09 21:48",
@@ -260,8 +260,8 @@
                                                                   "file":  "UnsavedReplay-2026.11.08-21.56.22.replay"
                                                               }
                                                           ],
-                                        "lastUpdated":  "2026-11-10T01:04:25.677Z",
-                                        "lastUpdatedMs":  1794272665677
+                                        "lastUpdated":  "2026-11-10T01:16:19.276Z",
+                                        "lastUpdatedMs":  1794273379280
                                     },
                     "chumbiis":  {
                                      "id":  "chumbiis",
@@ -544,5 +544,5 @@
 
                      },
     "treasureHourMode":  "auto",
-    "updatedAt":  "2026-11-10T01:14:41.881Z"
+    "updatedAt":  "2026-11-10T01:16:23.418Z"
 }
