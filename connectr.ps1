@@ -214,64 +214,29 @@ function Sync-ChestData {
         $timeStr = (Get-Date).ToString('HH:mm:ss')
         Write-Host "[$timeStr] Partidas processadas! Nick: $player | Baus: $finalChests | Partidas: $matchesCount | Vitorias: $wins" -ForegroundColor Green
 
-        # 1. Envia instantaneamente para a nuvem (ntfy.sh) para que o GitHub Pages e o OBS atualizem em tempo real!
+        # 1. Envia instantaneamente para o Firebase Realtime Database (Nuvem em tempo real independente do GitHub)
         try {
             $bytes = [System.Text.Encoding]::UTF8.GetBytes($summaryJson)
-            Invoke-RestMethod -Uri "https://ntfy.sh/fortnite_chestranking_nutellas_data" -Method Post -Body $bytes -ContentType 'application/json; charset=utf-8' -TimeoutSec 5 | Out-Null
-        } catch {}
+            Invoke-RestMethod -Uri "https://fortnite-ranking-ac8c4-default-rtdb.firebaseio.com/players/$playerId.json" -Method Put -Body $bytes -ContentType 'application/json; charset=utf-8' -TimeoutSec 5 | Out-Null
+        } catch {
+            Write-Host "[!] Erro ao enviar para o Firebase: $($_.Exception.Message)" -ForegroundColor Yellow
+        }
 
         # 2. Se o servidor local estiver rodando, envia via API local
         try {
             Invoke-RestMethod -Uri "http://localhost:3000/api/submit" -Method Post -Body $bytes -ContentType 'application/json; charset=utf-8' -TimeoutSec 2 | Out-Null
         } catch {}
 
-        # 3. Se for o PC do host com o repositório Git, atualiza o ranking_db.json com este jogador e outros da nuvem
+        # 3. Mantem copia de backup no ranking_db.json local (sem tocar no Git)
         if ($dbFile -and (Test-Path $dbFile)) {
             try {
                 $dbObj = Get-Content $dbFile -Raw -Encoding UTF8 | ConvertFrom-Json
                 if (-not $dbObj.players) { $dbObj | Add-Member -MemberType NoteProperty -Name 'players' -Value ([PSCustomObject]@{}) }
-                $existingLocal = $dbObj.players.$playerId
-                $isPlayerDifferent = (-not $existingLocal -or $existingLocal.totalChests -ne $summary.totalChests -or $existingLocal.inProgress -ne $summary.inProgress)
-
-                if ($isPlayerDifferent) {
-                    $dbObj.players | Add-Member -MemberType NoteProperty -Name $playerId -Value ($summaryJson | ConvertFrom-Json) -Force
-                }
-
-                $now = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
-                $hasRemoteChange = $false
-                if ($now - $script:lastRemotePollMs -gt 8000) {
-                    $script:lastRemotePollMs = $now
-                    try {
-                        $cloudLines = (Invoke-RestMethod -Uri "https://ntfy.sh/fortnite_chestranking_nutellas_data/json?poll=1" -TimeoutSec 2) -split "`n"
-                        foreach ($cLine in $cloudLines) {
-                            if (-not $cLine) { continue }
-                            $cEv = $cLine | ConvertFrom-Json
-                            $remote = $null
-                            if ($cEv.attachment -and $cEv.attachment.url) {
-                                $remote = Invoke-RestMethod -Uri $cEv.attachment.url -TimeoutSec 2
-                            } elseif ($cEv.message -and $cEv.message.StartsWith('{')) {
-                                $remote = $cEv.message | ConvertFrom-Json
-                            }
-                            if ($remote -and $remote.id -and $remote.id -ne $playerId) {
-                                $existing = $dbObj.players.$($remote.id)
-                                if (-not $existing -or ($remote.lastUpdatedMs -and $remote.lastUpdatedMs -gt $existing.lastUpdatedMs)) {
-                                    $dbObj.players | Add-Member -MemberType NoteProperty -Name $remote.id -Value $remote -Force
-                                    $hasRemoteChange = $true
-                                }
-                            }
-                        }
-                    } catch {}
-                }
-
-                if ($isPlayerDifferent -or $hasRemoteChange) {
-                    $dbObj.updatedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
-                    $dbObj | ConvertTo-Json -Depth 8 | Set-Content $dbFile -Encoding UTF8
-
-
-                }
+                $dbObj.players | Add-Member -MemberType NoteProperty -Name $playerId -Value ($summaryJson | ConvertFrom-Json) -Force
+                $dbObj.updatedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+                $dbObj | ConvertTo-Json -Depth 8 | Set-Content $dbFile -Encoding UTF8
             } catch {}
         }
-
         $script:lastHash = $currentHash
     } catch {
         Write-Host "[!] Erro: $($_.Exception.Message) na linha $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Red

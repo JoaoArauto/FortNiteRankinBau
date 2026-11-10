@@ -135,12 +135,16 @@ function buildPlayerSummary({ player, pcName, matches, treasuresList, overlayTot
 
 function broadcastToCloud(summary) {
   try {
-    const req = https.request('https://ntfy.sh/fortnite_chestranking_nutellas_data', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json; charset=utf-8' }
+    const data = JSON.stringify(summary);
+    const req = https.request(`https://fortnite-ranking-ac8c4-default-rtdb.firebaseio.com/players/${encodeURIComponent(summary.id)}.json`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Content-Length': Buffer.byteLength(data)
+      }
     });
     req.on('error', () => {});
-    req.write(JSON.stringify(summary));
+    req.write(data);
     req.end();
   } catch (e) {}
 }

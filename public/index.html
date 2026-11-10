@@ -1047,10 +1047,18 @@
       render();
     }
 
+    const FIREBASE_URL = 'https://fortnite-ranking-ac8c4-default-rtdb.firebaseio.com';
+
     async function removePlayer(e, id, name) {
       e.stopPropagation();
       if (!confirm(`Remover "${name}" do ranking?`)) return;
-      await fetch(`/api/player/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      try {
+        await fetch(`${FIREBASE_URL}/players/${encodeURIComponent(id)}.json`, { method: 'DELETE' });
+      } catch (err) {}
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        try { await fetch(`/api/player/${encodeURIComponent(id)}`, { method: 'DELETE' }); } catch (e) {}
+      }
+      loadRanking();
     }
 
     async function toggleTreasureHour() {
@@ -1059,11 +1067,22 @@
       const nextMode = modes[(modes.indexOf(cur) + 1) % modes.length];
       currentState.treasureHourMode = nextMode;
       render();
-      await fetch('/api/checklist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ treasureHourMode: nextMode })
-      });
+      try {
+        await fetch(`${FIREBASE_URL}/treasureHourMode.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(nextMode)
+        });
+      } catch (e) {}
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        try {
+          await fetch('/api/checklist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ treasureHourMode: nextMode })
+          });
+        } catch (e) {}
+      }
     }
 
     async function togglePrizeCheck(prizeKey, currentlyChecked) {
@@ -1072,13 +1091,23 @@
       if (!currentState.manualChecks.global) currentState.manualChecks.global = {};
       currentState.manualChecks.global[prizeKey] = nextVal;
       render();
-      await fetch('/api/checklist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ playerId: 'global', prizeKey, checked: nextVal })
-      });
+      try {
+        await fetch(`${FIREBASE_URL}/manualChecks/global/${encodeURIComponent(prizeKey)}.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(nextVal)
+        });
+      } catch (e) {}
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        try {
+          await fetch('/api/checklist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ playerId: 'global', prizeKey, checked: nextVal })
+          });
+        } catch (e) {}
+      }
     }
-
     const sortLabels = {
       totalChests: 'BAÚS',
       todayChests: 'HOJE',
@@ -1332,85 +1361,71 @@
       ev.target.value = '';
     });
 
-        function mergePlayerData(summary) {
-      if (!summary || !summary.id) return;
-      if (!currentState.playersMap) {
-        currentState.playersMap = {};
-        (currentState.players || []).forEach(p => { currentState.playersMap[p.id] = p; });
-      }
-      const existing = currentState.playersMap[summary.id];
-      if (!existing || !existing.lastUpdatedMs || (summary.lastUpdatedMs && summary.lastUpdatedMs >= existing.lastUpdatedMs)) {
-        currentState.playersMap[summary.id] = summary;
-        currentState.players = Object.values(currentState.playersMap);
-        render();
-      }
-    }
-
-    async function pollCloudUpdates() {
+    async function loadRanking() {
+      // 1. Tenta Firebase (banco separado oficial em tempo real)
       try {
-        const res = await fetch('https://ntfy.sh/fortnite_chestranking_nutellas_data/json?poll=1');
-        if (!res.ok) return;
-        const text = await res.text();
-        const lines = text.trim().split('\n');
-        for (const line of lines) {
-          if (!line) continue;
-          try {
-            const ev = JSON.parse(line);
-            if (ev.attachment && ev.attachment.url) {
-              const aRes = await fetch(ev.attachment.url);
-              if (aRes.ok) mergePlayerData(await aRes.json());
-            } else if (ev.message && ev.message.startsWith('{')) {
-              mergePlayerData(JSON.parse(ev.message));
-            }
-          } catch (e) {}
+        const res = await fetch(`${FIREBASE_URL}/.json?t=` + Date.now(), { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.players) {
+            const playersList = Array.isArray(data.players) ? data.players : Object.values(data.players);
+            currentState = { ...data, players: playersList };
+            render();
+            return;
+          }
         }
       } catch (e) {}
-    }
 
-    async function loadRanking() {
+      // 2. Fallback para endpoints locais / estaticos
       const endpoints = ['ranking_db.json?t=' + Date.now(), '/api/ranking'];
       for (const ep of endpoints) {
         try {
-          const res = await fetch(ep, { headers: { 'Bypass-Tunnel-Reminder': 'true' }, cache: 'no-store' });
+          const res = await fetch(ep, { cache: 'no-store' });
           if (res.ok) {
             const data = await res.json();
-            if (data.players) {
+            if (data && data.players) {
               const playersList = Array.isArray(data.players) ? data.players : Object.values(data.players);
-              if (!currentState.playersMap) currentState.playersMap = {};
-              playersList.forEach(p => {
-                const existing = currentState.playersMap[p.id];
-                if (!existing || !existing.lastUpdatedMs || (p.lastUpdatedMs && p.lastUpdatedMs >= existing.lastUpdatedMs)) {
-                  currentState.playersMap[p.id] = p;
-                }
-              });
-              currentState = { ...data, ...currentState, players: Object.values(currentState.playersMap) };
+              currentState = { ...data, players: playersList };
               render();
-              break;
+              return;
             }
           }
         } catch (e) {}
       }
-      await pollCloudUpdates();
     }
 
     function connectStream() {
-      // Stream em tempo real da nuvem (GitHub Pages e OBS atualizam em <0.5s sem cache)
+      // 1. Firebase Realtime Database SSE Stream (tempo real instantaneo <50ms no OBS e no navegador)
       try {
-        const ntfy = new EventSource('https://ntfy.sh/fortnite_chestranking_nutellas_data/sse');
-        ntfy.onmessage = async (event) => {
+        const fbEs = new EventSource(`${FIREBASE_URL}/players.json`);
+        fbEs.addEventListener('put', (event) => {
           try {
-            const ev = JSON.parse(event.data);
-            if (ev.attachment && ev.attachment.url) {
-              const aRes = await fetch(ev.attachment.url);
-              if (aRes.ok) mergePlayerData(await aRes.json());
-            } else if (ev.message && ev.message.startsWith('{')) {
-              mergePlayerData(JSON.parse(ev.message));
+            const payload = JSON.parse(event.data);
+            if (payload.path === '/' && payload.data) {
+              currentState.players = Object.values(payload.data);
+              render();
+            } else if (payload.path && payload.data) {
+              const pId = payload.path.replace(/^\//, '');
+              if (!currentState.players) currentState.players = [];
+              const idx = currentState.players.findIndex(p => p.id === pId);
+              if (idx >= 0) {
+                currentState.players[idx] = payload.data;
+              } else {
+                currentState.players.push(payload.data);
+              }
+              render();
             }
           } catch (e) {}
-        };
+        });
+
+        fbEs.addEventListener('patch', (event) => {
+          try {
+            loadRanking();
+          } catch (e) {}
+        });
       } catch (e) {}
 
-      // Stream local quando rodar com servidor Node
+      // 2. Fallback de stream local se estiver rodando via servidor Node
       if (window.location.protocol.startsWith('http') && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
         try {
           const es = new EventSource('/api/stream');
@@ -1418,12 +1433,9 @@
             try {
               const data = JSON.parse(event.data);
               const playersList = Array.isArray(data.players) ? data.players : Object.values(data.players);
-              playersList.forEach(p => mergePlayerData(p));
+              currentState = { ...data, players: playersList };
+              render();
             } catch (e) {}
-          };
-          es.onerror = () => {
-            es.close();
-            setTimeout(connectStream, 5000);
           };
         } catch (e) {}
       }
@@ -1431,7 +1443,7 @@
 
     loadRanking();
     connectStream();
-    setInterval(loadRanking, 8000);
+    setInterval(loadRanking, 10000);
   </script>
 </body>
 </html>
