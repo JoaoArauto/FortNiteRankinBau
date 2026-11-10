@@ -1332,6 +1332,41 @@
       ev.target.value = '';
     });
 
+        function mergePlayerData(summary) {
+      if (!summary || !summary.id) return;
+      if (!currentState.playersMap) {
+        currentState.playersMap = {};
+        (currentState.players || []).forEach(p => { currentState.playersMap[p.id] = p; });
+      }
+      const existing = currentState.playersMap[summary.id];
+      if (!existing || !existing.lastUpdatedMs || (summary.lastUpdatedMs && summary.lastUpdatedMs >= existing.lastUpdatedMs)) {
+        currentState.playersMap[summary.id] = summary;
+        currentState.players = Object.values(currentState.playersMap);
+        render();
+      }
+    }
+
+    async function pollCloudUpdates() {
+      try {
+        const res = await fetch('https://ntfy.sh/fortnite_chestranking_nutellas_data/json?poll=1');
+        if (!res.ok) return;
+        const text = await res.text();
+        const lines = text.trim().split('\n');
+        for (const line of lines) {
+          if (!line) continue;
+          try {
+            const ev = JSON.parse(line);
+            if (ev.attachment && ev.attachment.url) {
+              const aRes = await fetch(ev.attachment.url);
+              if (aRes.ok) mergePlayerData(await aRes.json());
+            } else if (ev.message && ev.message.startsWith('{')) {
+              mergePlayerData(JSON.parse(ev.message));
+            }
+          } catch (e) {}
+        }
+      } catch (e) {}
+    }
+
     async function loadRanking() {
       const endpoints = ['ranking_db.json?t=' + Date.now(), '/api/ranking'];
       for (const ep of endpoints) {
@@ -1341,16 +1376,41 @@
             const data = await res.json();
             if (data.players) {
               const playersList = Array.isArray(data.players) ? data.players : Object.values(data.players);
-              currentState = { ...data, players: playersList };
+              if (!currentState.playersMap) currentState.playersMap = {};
+              playersList.forEach(p => {
+                const existing = currentState.playersMap[p.id];
+                if (!existing || !existing.lastUpdatedMs || (p.lastUpdatedMs && p.lastUpdatedMs >= existing.lastUpdatedMs)) {
+                  currentState.playersMap[p.id] = p;
+                }
+              });
+              currentState = { ...data, ...currentState, players: Object.values(currentState.playersMap) };
               render();
-              return;
+              break;
             }
           }
         } catch (e) {}
       }
+      await pollCloudUpdates();
     }
 
     function connectStream() {
+      // Stream em tempo real da nuvem (GitHub Pages e OBS atualizam em <0.5s sem cache)
+      try {
+        const ntfy = new EventSource('https://ntfy.sh/fortnite_chestranking_nutellas_data/sse');
+        ntfy.onmessage = async (event) => {
+          try {
+            const ev = JSON.parse(event.data);
+            if (ev.attachment && ev.attachment.url) {
+              const aRes = await fetch(ev.attachment.url);
+              if (aRes.ok) mergePlayerData(await aRes.json());
+            } else if (ev.message && ev.message.startsWith('{')) {
+              mergePlayerData(JSON.parse(ev.message));
+            }
+          } catch (e) {}
+        };
+      } catch (e) {}
+
+      // Stream local quando rodar com servidor Node
       if (window.location.protocol.startsWith('http') && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
         try {
           const es = new EventSource('/api/stream');
@@ -1358,8 +1418,7 @@
             try {
               const data = JSON.parse(event.data);
               const playersList = Array.isArray(data.players) ? data.players : Object.values(data.players);
-              currentState = { ...data, players: playersList };
-              render();
+              playersList.forEach(p => mergePlayerData(p));
             } catch (e) {}
           };
           es.onerror = () => {
@@ -1372,7 +1431,7 @@
 
     loadRanking();
     connectStream();
-    setInterval(loadRanking, 5000);
+    setInterval(loadRanking, 8000);
   </script>
 </body>
 </html>
