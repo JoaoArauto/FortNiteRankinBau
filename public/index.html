@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
@@ -1131,27 +1131,41 @@
     });
 
     async function loadRanking() {
-      try {
-        const res = await fetch('/api/ranking', { headers: { 'Bypass-Tunnel-Reminder': 'true' } });
-        if (res.ok) {
-          currentState = await res.json();
-          render();
-        }
-      } catch (e) {}
+      const endpoints = ['ranking_db.json?t=' + Date.now(), '/api/ranking'];
+      for (const ep of endpoints) {
+        try {
+          const res = await fetch(ep, { headers: { 'Bypass-Tunnel-Reminder': 'true' }, cache: 'no-store' });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.players) {
+              const playersList = Array.isArray(data.players) ? data.players : Object.values(data.players);
+              currentState = { ...data, players: playersList };
+              render();
+              return;
+            }
+          }
+        } catch (e) {}
+      }
     }
 
     function connectStream() {
-      const es = new EventSource('/api/stream');
-      es.onmessage = (event) => {
+      if (window.location.protocol.startsWith('http') && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
         try {
-          currentState = JSON.parse(event.data);
-          render();
+          const es = new EventSource('/api/stream');
+          es.onmessage = (event) => {
+            try {
+              const data = JSON.parse(event.data);
+              const playersList = Array.isArray(data.players) ? data.players : Object.values(data.players);
+              currentState = { ...data, players: playersList };
+              render();
+            } catch (e) {}
+          };
+          es.onerror = () => {
+            es.close();
+            setTimeout(connectStream, 5000);
+          };
         } catch (e) {}
-      };
-      es.onerror = () => {
-        es.close();
-        setTimeout(connectStream, 3000);
-      };
+      }
     }
 
     loadRanking();

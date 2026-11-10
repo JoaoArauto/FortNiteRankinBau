@@ -3,17 +3,21 @@
     "thenutellas": {
       "id": "thenutellas",
       "player": "TheNutellas",
-      "pcName": "Pet-Station (Host)",
-      "totalChests": 1226,
-      "totalAmmo": 357,
-      "matchesCount": 74,
-      "wins": 22,
-      "bestMatch": 48,
-      "avgChests": 16.6,
+      "pcName": "Pet-Station",
+      "totalChests": 1373,
+      "totalAmmo": 381,
+      "matchesCount": 80,
+      "wins": 23,
+      "bestMatch": 61,
+      "avgChests": 17.2,
       "todayChests": 0,
-      "last5Chests": 73,
-      "treasuresCount": 13,
+      "last5Chests": 124,
+      "treasuresCount": 14,
       "treasuresList": [
+        {
+          "date": "2026-11-09 20:14",
+          "item": "Treasure gizmo"
+        },
         {
           "date": "2026-11-08 23:04",
           "item": "Treasure gizmo"
@@ -24,15 +28,11 @@
         },
         {
           "date": "2026-11-08 16:36",
-          "item": "Unknown treasure (dpid_item15)"
+          "item": "Golden chest reward"
         },
         {
           "date": "2026-11-08 16:18",
-          "item": "Unknown treasure (dpid_item16)"
-        },
-        {
-          "date": "2026-11-08 06:43",
-          "item": "Portable extractor"
+          "item": "Golden chest reward"
         },
         {
           "date": "2026-11-08 06:24",
@@ -41,6 +41,10 @@
         {
           "date": "2026-11-08 01:49",
           "item": "Golden firework"
+        },
+        {
+          "date": "2026-11-07 22:21",
+          "item": "Treasure gizmo"
         },
         {
           "date": "2026-11-07 21:43",
@@ -71,25 +75,91 @@
         "goldOutfit": false,
         "pirateShop": false,
         "vehicle": true,
-        "pickaxe": true,
+        "pickaxe": false,
         "jamTrack": true,
         "loadingScreen": true,
-        "gizmosCount": 8
+        "gizmosCount": 11
       },
-      "inProgress": false,
-      "sessionText": "160 chests (12 matches · avg. 13)",
+      "inProgress": true,
+      "sessionText": "124 chests (5 matches · avg. 25)",
       "lastMatch": {
-        "date": "2026-11-08 23:17",
+        "date": "2026-11-09 20:50",
         "mode": "Zero Build · Squads",
         "player": "TheNutellas",
-        "placement": 5,
+        "placement": 2,
         "totalPlayers": 80,
-        "chests": 13,
-        "ammo": 2,
+        "chests": 6,
+        "ammo": 6,
         "treasures": "",
-        "file": "UnsavedReplay-2026.11.08-23.17.09.replay"
+        "file": "UnsavedReplay-2026.11.09-20.50.49.replay"
       },
       "recentMatches": [
+        {
+          "date": "2026-11-09 20:50",
+          "mode": "Zero Build · Squads",
+          "player": "TheNutellas",
+          "placement": 2,
+          "totalPlayers": 80,
+          "chests": 6,
+          "ammo": 6,
+          "treasures": "",
+          "file": "UnsavedReplay-2026.11.09-20.50.49.replay"
+        },
+        {
+          "date": "2026-11-09 20:32",
+          "mode": "Zero Build · Squads",
+          "player": "TheNutellas",
+          "placement": 2,
+          "totalPlayers": 80,
+          "chests": 27,
+          "ammo": 3,
+          "treasures": "",
+          "file": "UnsavedReplay-2026.11.09-20.32.38.replay"
+        },
+        {
+          "date": "2026-11-09 20:14",
+          "mode": "Zero Build · Squads",
+          "player": "TheNutellas",
+          "placement": 2,
+          "totalPlayers": 80,
+          "chests": 61,
+          "ammo": 5,
+          "treasures": "Treasure gizmo",
+          "file": "UnsavedReplay-2026.11.09-20.14.26.replay"
+        },
+        {
+          "date": "2026-11-09 20:00",
+          "mode": "Zero Build · Squads",
+          "player": "TheNutellas",
+          "placement": 4,
+          "totalPlayers": 79,
+          "chests": 7,
+          "ammo": 1,
+          "treasures": "",
+          "file": "UnsavedReplay-2026.11.09-20.00.26.replay"
+        },
+        {
+          "date": "2026-11-09 19:40",
+          "mode": "Zero Build · Squads",
+          "player": "TheNutellas",
+          "placement": 1,
+          "totalPlayers": 80,
+          "chests": 23,
+          "ammo": 5,
+          "treasures": "",
+          "file": "UnsavedReplay-2026.11.09-19.40.49.replay"
+        },
+        {
+          "date": "2026-11-09 19:36",
+          "mode": "Zero Build · Squads",
+          "player": "TheNutellas",
+          "placement": 19,
+          "totalPlayers": 76,
+          "chests": 4,
+          "ammo": 3,
+          "treasures": "",
+          "file": "UnsavedReplay-2026.11.09-19.36.18.replay"
+        },
         {
           "date": "2026-11-08 23:17",
           "mode": "Zero Build · Squads",
@@ -107,7 +177,7 @@
           "player": "TheNutellas",
           "placement": 7,
           "totalPlayers": 76,
-          "chests": 7,
+          "chests": 8,
           "ammo": 2,
           "treasures": "Treasure gizmo",
           "file": "UnsavedReplay-2026.11.08-23.04.31.replay"
@@ -118,7 +188,7 @@
           "player": "TheNutellas",
           "placement": 2,
           "totalPlayers": 80,
-          "chests": 24,
+          "chests": 26,
           "ammo": 12,
           "treasures": "",
           "file": "UnsavedReplay-2026.11.08-22.44.31.replay"
@@ -129,7 +199,7 @@
           "player": "TheNutellas",
           "placement": 2,
           "totalPlayers": 80,
-          "chests": 15,
+          "chests": 17,
           "ammo": 12,
           "treasures": "",
           "file": "UnsavedReplay-2026.11.08-22.26.07.replay"
@@ -184,80 +254,14 @@
           "player": "TheNutellas",
           "placement": 1,
           "totalPlayers": 80,
-          "chests": 22,
+          "chests": 21,
           "ammo": 5,
           "treasures": "Extraction accelerator",
           "file": "UnsavedReplay-2026.11.08-20.46.50.replay"
-        },
-        {
-          "date": "2026-11-08 20:29",
-          "mode": "Zero Build · Squads",
-          "player": "TheNutellas",
-          "placement": 0,
-          "totalPlayers": 0,
-          "chests": 17,
-          "ammo": 3,
-          "treasures": "",
-          "file": "UnsavedReplay-2026.11.08-20.29.13.replay"
-        },
-        {
-          "date": "2026-11-08 20:02",
-          "mode": "Zero Build · Squads",
-          "player": "TheNutellas",
-          "placement": 1,
-          "totalPlayers": 75,
-          "chests": 15,
-          "ammo": 11,
-          "treasures": "",
-          "file": "UnsavedReplay-2026.11.08-20.02.41.replay"
-        },
-        {
-          "date": "2026-11-08 19:45",
-          "mode": "Zero Build · Squads",
-          "player": "TheNutellas",
-          "placement": 4,
-          "totalPlayers": 80,
-          "chests": 20,
-          "ammo": 8,
-          "treasures": "",
-          "file": "UnsavedReplay-2026.11.08-19.45.22.replay"
-        },
-        {
-          "date": "2026-11-08 17:53",
-          "mode": "Zero Build · Squads",
-          "player": "TheNutellas",
-          "placement": 1,
-          "totalPlayers": 80,
-          "chests": 23,
-          "ammo": 7,
-          "treasures": "",
-          "file": "UnsavedReplay-2026.11.08-17.53.13.replay"
-        },
-        {
-          "date": "2026-11-08 17:38",
-          "mode": "Zero Build · Squads",
-          "player": "TheNutellas",
-          "placement": 5,
-          "totalPlayers": 80,
-          "chests": 10,
-          "ammo": 5,
-          "treasures": "",
-          "file": "UnsavedReplay-2026.11.08-17.38.58.replay"
-        },
-        {
-          "date": "2026-11-08 17:07",
-          "mode": "Zero Build · Squads",
-          "player": "TheNutellas",
-          "placement": 1,
-          "totalPlayers": 80,
-          "chests": 6,
-          "ammo": 6,
-          "treasures": "",
-          "file": "UnsavedReplay-2026.11.08-17.07.48.replay"
         }
       ],
-      "lastUpdated": "2026-11-09T02:32:49.442Z",
-      "lastUpdatedMs": 1794191569442
+      "lastUpdated": "2026-11-10T00:12:08.469Z",
+      "lastUpdatedMs": 1794269528469
     },
     "chumbiis": {
       "id": "chumbiis",
@@ -531,14 +535,15 @@
       "lastUpdatedMs": 1794191572747
     }
   },
-  "publicUrl": "https://executives-perfectly-arab-attractions.trycloudflare.com",
+  "publicUrl": "https://corner-connection-stadium-norman.trycloudflare.com",
   "manualChecks": {
     "global": {
       "pickaxe": true,
-      "vehicle": true,
+      "vehicle": false,
       "loadingScreen": true,
       "jamTrack": true
     }
   },
-  "treasureHourMode": "auto"
+  "treasureHourMode": "auto",
+  "updatedAt": "2026-11-10T00:12:08.469Z"
 }
