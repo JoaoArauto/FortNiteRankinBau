@@ -355,7 +355,7 @@
                                                        "loadingScreen":  true,
                                                        "gizmosCount":  11
                                                    },
-                                        "inProgress":  false,
+                                        "inProgress":  true,
                                         "sessionText":  "207 chests (9 matches · avg. 23)",
                                         "lastMatch":  {
                                                           "date":  "2026-11-09 22:08",
@@ -535,8 +535,8 @@
                                                                   "file":  "UnsavedReplay-2026.11.08-22.11.18.replay"
                                                               }
                                                           ],
-                                        "lastUpdated":  "2026-11-10T01:28:41.884Z",
-                                        "lastUpdatedMs":  1794274121884
+                                        "lastUpdated":  "2026-11-10T01:29:02.005Z",
+                                        "lastUpdatedMs":  1794274142005
                                     }
                 },
     "publicUrl":  null,
@@ -544,5 +544,5 @@
 
                      },
     "treasureHourMode":  "auto",
-    "updatedAt":  "2026-11-10T01:28:51.958Z"
+    "updatedAt":  "2026-11-10T01:29:12.084Z"
 }
