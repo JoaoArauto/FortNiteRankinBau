@@ -1444,6 +1444,12 @@
     loadRanking();
     connectStream();
     setInterval(loadRanking, 10000);
+    // Auto-F5 periodico (recarrega a pagina automaticamente para manter tudo fresco e limpo)
+    // Padrao: a cada 3 minutos (180s). Pode customizar na URL: ?reload=120 (para 2 min) ou ?reload=0 (para desligar)
+    const reloadSec = parseInt(params.get('reload') || '180', 10);
+    if (reloadSec > 0) {
+      setTimeout(() => window.location.reload(), reloadSec * 1000);
+    }
   </script>
 </body>
 </html>
