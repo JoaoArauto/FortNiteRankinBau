@@ -260,8 +260,8 @@
           "file": "UnsavedReplay-2026.11.08-21.08.26.replay"
         }
       ],
-      "lastUpdated": "2026-11-10T00:39:16.579Z",
-      "lastUpdatedMs": 1794271156579
+      "lastUpdated": "2026-11-10T00:45:29.385Z",
+      "lastUpdatedMs": 1794271529385
     },
     "chumbiis": {
       "id": "chumbiis",
@@ -545,5 +545,5 @@
     }
   },
   "treasureHourMode": "auto",
-  "updatedAt": "2026-11-10T00:39:16.579Z"
+  "updatedAt": "2026-11-10T00:45:29.386Z"
 }
