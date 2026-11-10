@@ -4,14 +4,14 @@
       "id": "thenutellas",
       "player": "TheNutellas",
       "pcName": "Pet-Station",
-      "totalChests": 1373,
-      "totalAmmo": 381,
-      "matchesCount": 80,
-      "wins": 23,
+      "totalChests": 1399,
+      "totalAmmo": 383,
+      "matchesCount": 81,
+      "wins": 24,
       "bestMatch": 61,
-      "avgChests": 17.2,
+      "avgChests": 17.3,
       "todayChests": 0,
-      "last5Chests": 124,
+      "last5Chests": 127,
       "treasuresCount": 14,
       "treasuresList": [
         {
@@ -81,19 +81,30 @@
         "gizmosCount": 11
       },
       "inProgress": true,
-      "sessionText": "124 chests (5 matches · avg. 25)",
+      "sessionText": "150 chests (6 matches · avg. 25)",
       "lastMatch": {
-        "date": "2026-11-09 20:50",
+        "date": "2026-11-09 21:07",
         "mode": "Zero Build · Squads",
         "player": "TheNutellas",
-        "placement": 2,
+        "placement": 1,
         "totalPlayers": 80,
-        "chests": 6,
-        "ammo": 6,
+        "chests": 26,
+        "ammo": 2,
         "treasures": "",
-        "file": "UnsavedReplay-2026.11.09-20.50.49.replay"
+        "file": "UnsavedReplay-2026.11.09-21.07.52.replay"
       },
       "recentMatches": [
+        {
+          "date": "2026-11-09 21:07",
+          "mode": "Zero Build · Squads",
+          "player": "TheNutellas",
+          "placement": 1,
+          "totalPlayers": 80,
+          "chests": 26,
+          "ammo": 2,
+          "treasures": "",
+          "file": "UnsavedReplay-2026.11.09-21.07.52.replay"
+        },
         {
           "date": "2026-11-09 20:50",
           "mode": "Zero Build · Squads",
@@ -247,21 +258,10 @@
           "ammo": 0,
           "treasures": "",
           "file": "UnsavedReplay-2026.11.08-21.08.26.replay"
-        },
-        {
-          "date": "2026-11-08 20:46",
-          "mode": "Zero Build · Squads",
-          "player": "TheNutellas",
-          "placement": 1,
-          "totalPlayers": 80,
-          "chests": 21,
-          "ammo": 5,
-          "treasures": "Extraction accelerator",
-          "file": "UnsavedReplay-2026.11.08-20.46.50.replay"
         }
       ],
-      "lastUpdated": "2026-11-10T00:12:08.469Z",
-      "lastUpdatedMs": 1794269528469
+      "lastUpdated": "2026-11-10T00:34:11.509Z",
+      "lastUpdatedMs": 1794270851509
     },
     "chumbiis": {
       "id": "chumbiis",
@@ -545,5 +545,5 @@
     }
   },
   "treasureHourMode": "auto",
-  "updatedAt": "2026-11-10T00:12:08.469Z"
+  "updatedAt": "2026-11-10T00:34:11.511Z"
 }

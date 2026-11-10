@@ -1,13 +1,21 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const https = require('https');
 const { execSync, spawn } = require('child_process');
 
 console.log('========================================================');
 console.log('  FORTNITE CHEST RANKING - CONNECTR (GITHUB PAGES)');
 console.log('========================================================\n');
 
-const DB_FILE = path.join(__dirname, 'ranking_db.json');
+// Detecta o diretório do repositório
+const possibleRepoDirs = [
+  __dirname,
+  path.join(os.homedir(), 'Documents', 'ChestRanking'),
+  path.join(os.homedir(), 'Downloads', 'ChestRanking')
+];
+const repoDir = possibleRepoDirs.find(d => fs.existsSync(path.join(d, 'ranking_db.json')) || fs.existsSync(path.join(d, '.git'))) || __dirname;
+const DB_FILE = path.join(repoDir, 'ranking_db.json');
 const LOCAL_CHEST_DIR = path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), 'ChestCounter');
 
 // 1. Procura e inicia o ChestCounter / ChestTracker se ainda não estiver aberto
@@ -46,7 +54,7 @@ function launchChestTracker() {
 
 launchChestTracker();
 
-// 2. Classificação de prêmios
+// 2. Classificação dos prêmios oficiais da Caça à Loja Pirata
 function classifyPrizes(treasuresList) {
   const prizes = {
     goldOutfit: false,
@@ -123,6 +131,18 @@ function buildPlayerSummary({ player, pcName, matches, treasuresList, overlayTot
     lastUpdated: new Date().toISOString(),
     lastUpdatedMs: Date.now()
   };
+}
+
+function broadcastToCloud(summary) {
+  try {
+    const req = https.request('https://ntfy.sh/fortnite_chestranking_nutellas_data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=utf-8' }
+    });
+    req.on('error', () => {});
+    req.write(JSON.stringify(summary));
+    req.end();
+  } catch (e) {}
 }
 
 let lastCsvHash = '';
@@ -207,7 +227,7 @@ async function syncData() {
       sessionText
     });
 
-    // Atualiza ranking_db.json
+    // 1. Atualiza ranking_db.json no repositório
     let db = { players: {}, publicUrl: null, manualChecks: {}, treasureHourMode: 'auto' };
     if (fs.existsSync(DB_FILE)) {
       try { db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); } catch (e) {}
@@ -216,24 +236,29 @@ async function syncData() {
     db.players[summary.id] = summary;
     db.updatedAt = new Date().toISOString();
 
-    fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), 'utf8');
+    try {
+      fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), 'utf8');
+    } catch (e) {}
 
     const nowStr = new Date().toLocaleTimeString('pt-BR');
-    console.log(`[${nowStr}] Dados atualizados localmente! Nick: ${summary.player} | Baus: ${summary.totalChests} | Partidas: ${summary.matchesCount}`);
+    console.log(`[${nowStr}] Partidas processadas! Nick: ${summary.player} | Baus: ${summary.totalChests} | Partidas: ${summary.matchesCount}`);
 
-    // Push para o GitHub
+    // 2. Broadcast instantâneo para a nuvem (GitHub Pages e OBS recebem em 0.5s)
+    broadcastToCloud(summary);
+
+    // 3. Push para o repositório GitHub se o Git estiver disponível
     try {
-      execSync('git add ranking_db.json index.html public/index.html', { cwd: __dirname, stdio: 'ignore' });
-      const status = execSync('git status --porcelain', { cwd: __dirname, encoding: 'utf8' });
-      if (status.includes('ranking_db.json')) {
-        execSync(`git commit -m "sync: ${summary.player} (${summary.totalChests} baus)"`, { cwd: __dirname, stdio: 'ignore' });
-        console.log(`[*] Enviando estatisticas para o GitHub Pages...`);
-        execSync('git push origin main', { cwd: __dirname, stdio: 'ignore' });
-        console.log(`[+] SINCRONIZADO COM GITHUB COM SUCESSO! Site e OBS atualizados ao vivo!\n`);
+      if (fs.existsSync(path.join(repoDir, '.git'))) {
+        execSync('git add ranking_db.json index.html public/index.html', { cwd: repoDir, stdio: 'ignore' });
+        const status = execSync('git status --porcelain', { cwd: repoDir, encoding: 'utf8' });
+        if (status.includes('ranking_db.json')) {
+          execSync(`git commit -m "sync: ${summary.player} (${summary.totalChests} baus)"`, { cwd: repoDir, stdio: 'ignore' });
+          console.log(`[*] Enviando estatisticas para o GitHub...`);
+          execSync('git push origin main', { cwd: repoDir, stdio: 'ignore' });
+          console.log(`[+] SINCRONIZADO COM GITHUB COM SUCESSO! Site e OBS atualizados ao vivo!\n`);
+        }
       }
-    } catch (gitErr) {
-      // Se falhar o git push temporariamente (ex: sem internet), tenta no próximo ciclo
-    }
+    } catch (gitErr) {}
 
     lastCsvHash = currentHash;
   } catch (err) {
