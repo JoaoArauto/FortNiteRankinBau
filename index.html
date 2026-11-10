@@ -1217,13 +1217,6 @@
       const dlBtn = document.getElementById('downloadBatBtn');
       if (dlBtn) { dlBtn.href = 'connectr.bat'; dlBtn.setAttribute('download', 'connectr.bat'); }
 
-
-
-
-
-        }
-      }
-
       const players = [...(currentState.players || [])];
       players.sort((a, b) => (b[currentSort] || 0) - (a[currentSort] || 0));
 
