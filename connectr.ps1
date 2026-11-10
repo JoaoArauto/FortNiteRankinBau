@@ -225,10 +225,6 @@ function Sync-ChestData {
             Write-Host "[!] Erro ao enviar para o Firebase: $($_.Exception.Message)" -ForegroundColor Yellow
         }
 
-        # 2. Se o servidor local estiver rodando, envia via API local
-        try {
-            Invoke-RestMethod -Uri "http://localhost:3000/api/submit" -Method Post -Body $bytes -ContentType 'application/json; charset=utf-8' -TimeoutSec 2 | Out-Null
-        } catch {}
 
         # 3. Mantem copia de backup no ranking_db.json local (sem tocar no Git)
         if ($dbFile -and (Test-Path $dbFile)) {

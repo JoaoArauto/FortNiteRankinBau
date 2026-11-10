@@ -999,33 +999,23 @@
     }
 
     function getShareUrl() {
-      if (currentState.publicUrl) return currentState.publicUrl;
-      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        return window.location.origin + window.location.pathname;
-      }
-      if (currentState.localUrls && currentState.localUrls.length > 0) {
-        return currentState.localUrls[0];
-      }
-      return window.location.origin;
+      return window.location.origin + window.location.pathname;
     }
 
     function downloadConnectr(e) {
-      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        e.preventDefault();
-        fetch('connectr.bat')
-          .then(res => { if (!res.ok) throw new Error(); return res.blob(); })
-          .then(blob => {
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'connectr.bat';
-            a.click();
-          })
-          .catch(() => {
-            window.location.href = 'https://raw.githubusercontent.com/JoaoArauto/FortNiteRankinBau/main/connectr.bat';
-          });
-      }
+      e.preventDefault();
+      fetch('connectr.bat')
+        .then(res => { if (!res.ok) throw new Error(); return res.blob(); })
+        .then(blob => {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'connectr.bat';
+          a.click();
+        })
+        .catch(() => {
+          window.location.href = 'https://raw.githubusercontent.com/JoaoArauto/FortNiteRankinBau/main/connectr.bat';
+        });
     }
-
     function copyShareLink(btn) {
       const url = getShareUrl();
       navigator.clipboard.writeText(url);
@@ -1055,9 +1045,6 @@
       try {
         await fetch(`${FIREBASE_URL}/players/${encodeURIComponent(id)}.json`, { method: 'DELETE' });
       } catch (err) {}
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        try { await fetch(`/api/player/${encodeURIComponent(id)}`, { method: 'DELETE' }); } catch (e) {}
-      }
       loadRanking();
     }
 
@@ -1074,15 +1061,6 @@
           body: JSON.stringify(nextMode)
         });
       } catch (e) {}
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        try {
-          await fetch('/api/checklist', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ treasureHourMode: nextMode })
-          });
-        } catch (e) {}
-      }
     }
 
     async function togglePrizeCheck(prizeKey, currentlyChecked) {
@@ -1098,15 +1076,6 @@
           body: JSON.stringify(nextVal)
         });
       } catch (e) {}
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        try {
-          await fetch('/api/checklist', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ playerId: 'global', prizeKey, checked: nextVal })
-          });
-        } catch (e) {}
-      }
     }
     const sortLabels = {
       totalChests: 'BAÚS',
@@ -1246,12 +1215,12 @@
     function render() {
       const shareUrl = getShareUrl();
       const dlBtn = document.getElementById('downloadBatBtn');
-      if (dlBtn) {
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-          dlBtn.href = `/api/download-client?server=${encodeURIComponent(shareUrl)}`;
-        } else {
-          dlBtn.href = 'connectr.bat';
-          dlBtn.setAttribute('download', 'connectr.bat');
+      if (dlBtn) { dlBtn.href = 'connectr.bat'; dlBtn.setAttribute('download', 'connectr.bat'); }
+
+
+
+
+
         }
       }
 
@@ -1348,54 +1317,32 @@
         .replace(/"/g, '&quot;');
     }
 
-    document.getElementById('manualFileInput').addEventListener('change', async (ev) => {
-      const file = ev.target.files[0];
-      if (!file) return;
-      const text = await file.text();
-      let payload = file.name.endsWith('.json') ? JSON.parse(text) : { matchesCsv: text };
-      await fetch('/api/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      ev.target.value = '';
-    });
-
     async function loadRanking() {
-      // 1. Tenta Firebase (banco separado oficial em tempo real)
       try {
         const res = await fetch(`${FIREBASE_URL}/.json?t=` + Date.now(), { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           if (data && data.players) {
-            const playersList = Array.isArray(data.players) ? data.players : Object.values(data.players);
-            currentState = { ...data, players: playersList };
+            currentState = { ...data, players: Object.values(data.players) };
             render();
             return;
           }
         }
       } catch (e) {}
 
-      // 2. Fallback para endpoints locais / estaticos
-      const endpoints = ['ranking_db.json?t=' + Date.now(), '/api/ranking'];
-      for (const ep of endpoints) {
-        try {
-          const res = await fetch(ep, { cache: 'no-store' });
-          if (res.ok) {
-            const data = await res.json();
-            if (data && data.players) {
-              const playersList = Array.isArray(data.players) ? data.players : Object.values(data.players);
-              currentState = { ...data, players: playersList };
-              render();
-              return;
-            }
+      try {
+        const res = await fetch('ranking_db.json?t=' + Date.now(), { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.players) {
+            currentState = { ...data, players: Object.values(data.players) };
+            render();
           }
-        } catch (e) {}
-      }
+        }
+      } catch (e) {}
     }
 
     function connectStream() {
-      // 1. Firebase Realtime Database SSE Stream (tempo real instantaneo <50ms no OBS e no navegador)
       try {
         const fbEs = new EventSource(`${FIREBASE_URL}/players.json`);
         fbEs.addEventListener('put', (event) => {
@@ -1418,38 +1365,17 @@
           } catch (e) {}
         });
 
-        fbEs.addEventListener('patch', (event) => {
-          try {
-            loadRanking();
-          } catch (e) {}
-        });
+        fbEs.addEventListener('patch', () => loadRanking());
       } catch (e) {}
-
-      // 2. Fallback de stream local se estiver rodando via servidor Node
-      if (window.location.protocol.startsWith('http') && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-        try {
-          const es = new EventSource('/api/stream');
-          es.onmessage = (event) => {
-            try {
-              const data = JSON.parse(event.data);
-              const playersList = Array.isArray(data.players) ? data.players : Object.values(data.players);
-              currentState = { ...data, players: playersList };
-              render();
-            } catch (e) {}
-          };
-        } catch (e) {}
-      }
     }
 
     loadRanking();
     connectStream();
-    setInterval(loadRanking, 10000);
-    // Auto-F5 periodico (recarrega a pagina automaticamente para manter tudo fresco e limpo)
-    // Padrao: a cada 3 minutos (180s). Pode customizar na URL: ?reload=120 (para 2 min) ou ?reload=0 (para desligar)
+    setInterval(loadRanking, 30000);
+
     const reloadSec = parseInt(params.get('reload') || '180', 10);
     if (reloadSec > 0) {
       setTimeout(() => window.location.reload(), reloadSec * 1000);
     }
-  </script>
 </body>
 </html>

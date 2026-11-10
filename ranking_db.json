@@ -279,14 +279,14 @@
                                         "id":  "thenutellas",
                                         "player":  "TheNutellas",
                                         "pcName":  "PET-STATION",
-                                        "totalChests":  1502,
-                                        "totalAmmo":  396,
-                                        "matchesCount":  85,
+                                        "totalChests":  1588,
+                                        "totalAmmo":  417,
+                                        "matchesCount":  88,
                                         "wins":  25,
                                         "bestMatch":  61,
-                                        "avgChests":  17.7,
-                                        "todayChests":  257,
-                                        "last5Chests":  129,
+                                        "avgChests":  18,
+                                        "todayChests":  343,
+                                        "last5Chests":  154,
                                         "treasuresCount":  15,
                                         "treasuresList":  [
                                                               {
@@ -360,19 +360,52 @@
                                                        "gizmosCount":  12
                                                    },
                                         "inProgress":  false,
-                                        "sessionText":  "253 chests (10 matches · avg. 25)",
+                                        "sessionText":  "339 chests (13 matches · avg. 26)",
                                         "lastMatch":  {
-                                                          "date":  "2026-11-09 22:28",
+                                                          "date":  "2026-11-09 23:32",
                                                           "mode":  "Zero Build · Squads",
                                                           "player":  "TheNutellas",
-                                                          "placement":  2,
-                                                          "totalPlayers":  75,
-                                                          "chests":  46,
-                                                          "ammo":  7,
-                                                          "treasures":  "Golden firework",
-                                                          "file":  "UnsavedReplay-2026.11.09-22.28.27.replay"
+                                                          "placement":  9,
+                                                          "totalPlayers":  80,
+                                                          "chests":  30,
+                                                          "ammo":  6,
+                                                          "treasures":  "",
+                                                          "file":  "UnsavedReplay-2026.11.09-23.32.13.replay"
                                                       },
                                         "recentMatches":  [
+                                                              {
+                                                                  "date":  "2026-11-09 23:32",
+                                                                  "mode":  "Zero Build · Squads",
+                                                                  "player":  "TheNutellas",
+                                                                  "placement":  9,
+                                                                  "totalPlayers":  80,
+                                                                  "chests":  30,
+                                                                  "ammo":  6,
+                                                                  "treasures":  "",
+                                                                  "file":  "UnsavedReplay-2026.11.09-23.32.13.replay"
+                                                              },
+                                                              {
+                                                                  "date":  "2026-11-09 23:13",
+                                                                  "mode":  "Zero Build · Squads",
+                                                                  "player":  "TheNutellas",
+                                                                  "placement":  2,
+                                                                  "totalPlayers":  80,
+                                                                  "chests":  13,
+                                                                  "ammo":  2,
+                                                                  "treasures":  "",
+                                                                  "file":  "UnsavedReplay-2026.11.09-23.13.21.replay"
+                                                              },
+                                                              {
+                                                                  "date":  "2026-11-09 22:48",
+                                                                  "mode":  "Zero Build · Squads",
+                                                                  "player":  "TheNutellas",
+                                                                  "placement":  3,
+                                                                  "totalPlayers":  80,
+                                                                  "chests":  43,
+                                                                  "ammo":  13,
+                                                                  "treasures":  "",
+                                                                  "file":  "UnsavedReplay-2026.11.09-22.48.19.replay"
+                                                              },
                                                               {
                                                                   "date":  "2026-11-09 22:28",
                                                                   "mode":  "Zero Build · Squads",
@@ -504,43 +537,10 @@
                                                                   "ammo":  2,
                                                                   "treasures":  "",
                                                                   "file":  "UnsavedReplay-2026.11.08-23.17.09.replay"
-                                                              },
-                                                              {
-                                                                  "date":  "2026-11-08 23:04",
-                                                                  "mode":  "Zero Build · Squads",
-                                                                  "player":  "TheNutellas",
-                                                                  "placement":  7,
-                                                                  "totalPlayers":  76,
-                                                                  "chests":  8,
-                                                                  "ammo":  2,
-                                                                  "treasures":  "Treasure gizmo",
-                                                                  "file":  "UnsavedReplay-2026.11.08-23.04.31.replay"
-                                                              },
-                                                              {
-                                                                  "date":  "2026-11-08 22:44",
-                                                                  "mode":  "Zero Build · Squads",
-                                                                  "player":  "TheNutellas",
-                                                                  "placement":  2,
-                                                                  "totalPlayers":  80,
-                                                                  "chests":  26,
-                                                                  "ammo":  12,
-                                                                  "treasures":  "",
-                                                                  "file":  "UnsavedReplay-2026.11.08-22.44.31.replay"
-                                                              },
-                                                              {
-                                                                  "date":  "2026-11-08 22:26",
-                                                                  "mode":  "Zero Build · Squads",
-                                                                  "player":  "TheNutellas",
-                                                                  "placement":  2,
-                                                                  "totalPlayers":  80,
-                                                                  "chests":  17,
-                                                                  "ammo":  12,
-                                                                  "treasures":  "",
-                                                                  "file":  "UnsavedReplay-2026.11.08-22.26.07.replay"
                                                               }
                                                           ],
-                                        "lastUpdated":  "2026-11-10T01:47:19.363Z",
-                                        "lastUpdatedMs":  1794275239363
+                                        "lastUpdated":  "2026-11-10T02:42:31.133Z",
+                                        "lastUpdatedMs":  1794278551133
                                     }
                 },
     "publicUrl":  null,
@@ -548,5 +548,5 @@
 
                      },
     "treasureHourMode":  "auto",
-    "updatedAt":  "2026-11-10T01:47:29.428Z"
+    "updatedAt":  "2026-11-10T02:42:33.674Z"
 }
