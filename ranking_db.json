@@ -279,14 +279,14 @@
                                         "id":  "thenutellas",
                                         "player":  "TheNutellas",
                                         "pcName":  "PET-STATION",
-                                        "totalChests":  1434,
-                                        "totalAmmo":  387,
-                                        "matchesCount":  83,
-                                        "wins":  24,
+                                        "totalChests":  1456,
+                                        "totalAmmo":  389,
+                                        "matchesCount":  84,
+                                        "wins":  25,
                                         "bestMatch":  61,
                                         "avgChests":  17.3,
-                                        "todayChests":  189,
-                                        "last5Chests":  94,
+                                        "todayChests":  211,
+                                        "last5Chests":  89,
                                         "treasuresCount":  14,
                                         "treasuresList":  [
                                                               {
@@ -355,20 +355,31 @@
                                                        "loadingScreen":  true,
                                                        "gizmosCount":  11
                                                    },
-                                        "inProgress":  true,
-                                        "sessionText":  "185 chests (8 matches · avg. 23)",
+                                        "inProgress":  false,
+                                        "sessionText":  "207 chests (9 matches · avg. 23)",
                                         "lastMatch":  {
-                                                          "date":  "2026-11-09 21:48",
+                                                          "date":  "2026-11-09 22:08",
                                                           "mode":  "Zero Build · Squads",
                                                           "player":  "TheNutellas",
-                                                          "placement":  4,
+                                                          "placement":  1,
                                                           "totalPlayers":  80,
-                                                          "chests":  17,
+                                                          "chests":  22,
                                                           "ammo":  2,
                                                           "treasures":  "",
-                                                          "file":  "UnsavedReplay-2026.11.09-21.48.51.replay"
+                                                          "file":  "UnsavedReplay-2026.11.09-22.08.55.replay"
                                                       },
                                         "recentMatches":  [
+                                                              {
+                                                                  "date":  "2026-11-09 22:08",
+                                                                  "mode":  "Zero Build · Squads",
+                                                                  "player":  "TheNutellas",
+                                                                  "placement":  1,
+                                                                  "totalPlayers":  80,
+                                                                  "chests":  22,
+                                                                  "ammo":  2,
+                                                                  "treasures":  "",
+                                                                  "file":  "UnsavedReplay-2026.11.09-22.08.55.replay"
+                                                              },
                                                               {
                                                                   "date":  "2026-11-09 21:48",
                                                                   "mode":  "Zero Build · Squads",
@@ -522,21 +533,10 @@
                                                                   "ammo":  6,
                                                                   "treasures":  "",
                                                                   "file":  "UnsavedReplay-2026.11.08-22.11.18.replay"
-                                                              },
-                                                              {
-                                                                  "date":  "2026-11-08 21:56",
-                                                                  "mode":  "Zero Build · Squads",
-                                                                  "player":  "TheNutellas",
-                                                                  "placement":  5,
-                                                                  "totalPlayers":  78,
-                                                                  "chests":  1,
-                                                                  "ammo":  0,
-                                                                  "treasures":  "",
-                                                                  "file":  "UnsavedReplay-2026.11.08-21.56.22.replay"
                                                               }
                                                           ],
-                                        "lastUpdated":  "2026-11-10T01:25:52.347Z",
-                                        "lastUpdatedMs":  1794273952347
+                                        "lastUpdated":  "2026-11-10T01:26:10.765Z",
+                                        "lastUpdatedMs":  1794273970765
                                     }
                 },
     "publicUrl":  null,
@@ -544,5 +544,5 @@
 
                      },
     "treasureHourMode":  "auto",
-    "updatedAt":  "2026-11-10T01:26:02.429Z"
+    "updatedAt":  "2026-11-10T01:26:20.823Z"
 }
