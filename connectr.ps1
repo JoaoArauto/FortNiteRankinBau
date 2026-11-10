@@ -98,7 +98,7 @@ function Sync-ChestData {
         try { $overlayHtml = [System.IO.File]::ReadAllText($ovlFile, [System.Text.Encoding]::UTF8) } catch {}
     }
 
-    $currentHash = "$($csvContent.Length)_$($csvContent.Substring([Math]::Max(0, $csvContent.Length - 120)))_$($overlayHtml.Substring(0, [Math]::Min(100, $overlayHtml.Length)))"
+    $currentHash = "$($csvContent.Length)_$($csvContent.Substring([Math]::Max(0, $csvContent.Length - 120)))_$($overlayHtml.GetHashCode())"
     $hasLocalChange = ($currentHash -ne $script:lastHash)
     if (-not $hasLocalChange -and (-not $dbFile -or -not (Test-Path (Join-Path $repoDir '.git')))) {
         return
@@ -225,47 +225,60 @@ function Sync-ChestData {
             Invoke-RestMethod -Uri "http://localhost:3000/api/submit" -Method Post -Body $bytes -ContentType 'application/json; charset=utf-8' -TimeoutSec 2 | Out-Null
         } catch {}
 
-        # 3. Se for o PC do host com o repositório Git, atualiza o ranking_db.json com este jogador e outros da nuvem, e faz git push
+        # 3. Se for o PC do host com o repositório Git, atualiza o ranking_db.json com este jogador e outros da nuvem
         if ($dbFile -and (Test-Path $dbFile)) {
             try {
                 $dbObj = Get-Content $dbFile -Raw -Encoding UTF8 | ConvertFrom-Json
                 if (-not $dbObj.players) { $dbObj | Add-Member -MemberType NoteProperty -Name 'players' -Value ([PSCustomObject]@{}) }
-                $dbObj.players | Add-Member -MemberType NoteProperty -Name $playerId -Value ($summaryJson | ConvertFrom-Json) -Force
+                $existingLocal = $dbObj.players.$playerId
+                $isPlayerDifferent = (-not $existingLocal -or $existingLocal.totalChests -ne $summary.totalChests -or $existingLocal.inProgress -ne $summary.inProgress)
 
-                # Sincroniza jogadores amigos da nuvem (ex: Chumbiis)
-                try {
-                    $cloudLines = (Invoke-RestMethod -Uri "https://ntfy.sh/fortnite_chestranking_nutellas_data/json?poll=1" -TimeoutSec 3) -split "`n"
-                    foreach ($cLine in $cloudLines) {
-                        if (-not $cLine) { continue }
-                        $cEv = $cLine | ConvertFrom-Json
-                        $remote = $null
-                        if ($cEv.attachment -and $cEv.attachment.url) {
-                            $remote = Invoke-RestMethod -Uri $cEv.attachment.url -TimeoutSec 3
-                        } elseif ($cEv.message -and $cEv.message.StartsWith('{')) {
-                            $remote = $cEv.message | ConvertFrom-Json
-                        }
-                        if ($remote -and $remote.id -and $remote.id -ne $playerId) {
-                            $existing = $dbObj.players.$($remote.id)
-                            if (-not $existing -or ($remote.lastUpdatedMs -and $remote.lastUpdatedMs -ge $existing.lastUpdatedMs)) {
-                                $dbObj.players | Add-Member -MemberType NoteProperty -Name $remote.id -Value $remote -Force
+                if ($isPlayerDifferent) {
+                    $dbObj.players | Add-Member -MemberType NoteProperty -Name $playerId -Value ($summaryJson | ConvertFrom-Json) -Force
+                }
+
+                $now = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+                $hasRemoteChange = $false
+                if ($now - $script:lastRemotePollMs -gt 8000) {
+                    $script:lastRemotePollMs = $now
+                    try {
+                        $cloudLines = (Invoke-RestMethod -Uri "https://ntfy.sh/fortnite_chestranking_nutellas_data/json?poll=1" -TimeoutSec 2) -split "`n"
+                        foreach ($cLine in $cloudLines) {
+                            if (-not $cLine) { continue }
+                            $cEv = $cLine | ConvertFrom-Json
+                            $remote = $null
+                            if ($cEv.attachment -and $cEv.attachment.url) {
+                                $remote = Invoke-RestMethod -Uri $cEv.attachment.url -TimeoutSec 2
+                            } elseif ($cEv.message -and $cEv.message.StartsWith('{')) {
+                                $remote = $cEv.message | ConvertFrom-Json
+                            }
+                            if ($remote -and $remote.id -and $remote.id -ne $playerId) {
+                                $existing = $dbObj.players.$($remote.id)
+                                if (-not $existing -or ($remote.lastUpdatedMs -and $remote.lastUpdatedMs -gt $existing.lastUpdatedMs)) {
+                                    $dbObj.players | Add-Member -MemberType NoteProperty -Name $remote.id -Value $remote -Force
+                                    $hasRemoteChange = $true
+                                }
                             }
                         }
-                    }
-                } catch {}
+                    } catch {}
+                }
 
-                $dbObj.updatedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
-                $dbObj | ConvertTo-Json -Depth 8 | Set-Content $dbFile -Encoding UTF8
+                if ($isPlayerDifferent -or $hasRemoteChange) {
+                    $dbObj.updatedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+                    $dbObj | ConvertTo-Json -Depth 8 | Set-Content $dbFile -Encoding UTF8
 
-                if (Test-Path (Join-Path $repoDir '.git')) {
-                    Push-Location $repoDir
-                    git add ranking_db.json index.html public/index.html 2>$null
-                    $status = git status --porcelain
-                    if ($status -match 'ranking_db\.json') {
-                        git commit -m "sync: ranking atualizado ($player e amigos)" 2>$null
-                        git push origin main 2>$null
-                        Write-Host "[+] Atualizado no GitHub Pages com sucesso!`n" -ForegroundColor Cyan
+                    if ((Test-Path (Join-Path $repoDir '.git')) -and ($now - $script:lastGitPushMs -gt 15000)) {
+                        $script:lastGitPushMs = $now
+                        Push-Location $repoDir
+                        git add ranking_db.json index.html public/index.html 2>$null
+                        $status = git status --porcelain
+                        if ($status -match 'ranking_db\.json') {
+                            git commit -m "sync: ranking atualizado ($player e amigos)" 2>$null
+                            git push origin main 2>$null
+                            Write-Host "[+] Atualizado no GitHub Pages com sucesso!`n" -ForegroundColor Cyan
+                        }
+                        Pop-Location
                     }
-                    Pop-Location
                 }
             } catch {}
         }
@@ -282,6 +295,6 @@ Write-Host "[*] Monitorando seus baus em tempo real... Mantenha esta janela aber
 Sync-ChestData
 
 while ($true) {
-    Start-Sleep -Seconds 5
+    Start-Sleep -Seconds 1
     Sync-ChestData
 }

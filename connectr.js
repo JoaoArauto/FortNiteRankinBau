@@ -1,4 +1,4 @@
-const fs = require('fs');
+﻿const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const https = require('https');
@@ -169,7 +169,7 @@ async function syncData() {
     try { overlayHtml = fs.readFileSync(overlayPath, 'utf8'); } catch (e) {}
   }
 
-  const currentHash = `${csvContent.length}_${csvContent.slice(-120)}_${overlayHtml.slice(0, 100)}`;
+  const currentHash = `${csvContent.length}_${csvContent.slice(-120)}_${overlayHtml}`;
   if (currentHash === lastCsvHash) {
     return; // Sem alterações
   }
@@ -270,4 +270,4 @@ async function syncData() {
 
 console.log('[*] Monitorando seus baus em tempo real... Mantenha esta janela aberta!\n');
 syncData();
-setInterval(syncData, 5000);
+setInterval(syncData, 1000);
