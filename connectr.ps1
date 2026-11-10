@@ -98,10 +98,13 @@ function Sync-ChestData {
         try { $overlayHtml = [System.IO.File]::ReadAllText($ovlFile, [System.Text.Encoding]::UTF8) } catch {}
     }
 
-    $currentHash = "$($csvContent.Length)_$($csvContent.Substring([Math]::Max(0, $csvContent.Length - 120)))_$($overlayHtml.GetHashCode())"
-    $hasLocalChange = ($currentHash -ne $script:lastHash)
-    if (-not $hasLocalChange -and (-not $dbFile -or -not (Test-Path (Join-Path $repoDir '.git')))) {
-        return
+    $csvLen = $csvContent.Length
+    $csvTail = if ($csvLen -gt 200) { $csvContent.Substring($csvLen - 200) } else { $csvContent }
+    $ovlHash = if ($overlayHtml) { $overlayHtml.GetHashCode() } else { 0 }
+    $currentHash = "${csvLen}_${csvTail}_${ovlHash}"
+
+    if ($currentHash -eq $script:lastHash) {
+        return # Nenhuma modificacao local em relacao a checagem anterior
     }
 
     $script:isSyncing = $true
@@ -249,6 +252,6 @@ Write-Host "[*] Monitorando seus baus em tempo real... Mantenha esta janela aber
 Sync-ChestData
 
 while ($true) {
-    Start-Sleep -Seconds 1
+    Start-Sleep -Seconds 2
     Sync-ChestData
 }
