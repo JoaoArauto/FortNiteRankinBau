@@ -45,13 +45,21 @@ Envie o arquivo `connectr.bat` para os amigos ou compartilhe o link do painel on
 
 ## 🎥 Uso no OBS Studio (Stream Overlay)
 
-Adicione uma fonte do tipo **Navegador (Browser Source)** no OBS:
+Adicione uma fonte do tipo **Navegador (Browser Source)** no OBS Studio:
 
-| Widget | URL no OBS | Dimensões Recomendadas |
+### 1. Link Local (Recomendado se o OBS está no mesmo PC do servidor - 0ms de delay):
+| Widget | URL Local no OBS | Dimensões Recomendadas |
 | :--- | :--- | :--- |
 | **Painel Completo** | `http://localhost:3000/?obs=1` | `1120 × 520` |
 | **Apenas Ranking** | `http://localhost:3000/?obs=1&widget=ranking` | `540 × 480` |
 | **Apenas Loja Pirata** | `http://localhost:3000/?obs=1&widget=checklist` | `540 × 520` |
+
+### 2. Link Estático na Nuvem (GitHub Pages - Para OBS remoto ou amigos na live):
+| Widget | Link Estático Permanente | Dimensões Recomendadas |
+| :--- | :--- | :--- |
+| **Painel Completo** | `https://joaoarauto.github.io/FortNiteRankinBau/?obs=1` | `1120 × 520` |
+| **Apenas Ranking** | `https://joaoarauto.github.io/FortNiteRankinBau/?obs=1&widget=ranking` | `540 × 480` |
+| **Apenas Loja Pirata** | `https://joaoarauto.github.io/FortNiteRankinBau/?obs=1&widget=checklist` | `540 × 520` |
 
 *O parâmetro `?obs=1` ativa transparência e remove barras de controle da live.*
 
