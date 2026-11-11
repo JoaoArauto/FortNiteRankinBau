@@ -44,13 +44,6 @@ $localChestDir = Join-Path $env:APPDATA 'ChestCounter'
 $csvFile = Join-Path $localChestDir 'matches.csv'
 $ovlFile = Join-Path $localChestDir 'overlay.html'
 
-$possibleRepoDirs = @(
-    $PSScriptRoot,
-    (Join-Path $env:USERPROFILE 'Documents\ChestRanking'),
-    (Join-Path $env:USERPROFILE 'Downloads\ChestRanking')
-)
-$repoDir = $possibleRepoDirs | Where-Object { (Test-Path (Join-Path $_ 'ranking_db.json')) -or (Test-Path (Join-Path $_ '.git')) } | Select-Object -First 1
-$dbFile = if ($repoDir) { Join-Path $repoDir 'ranking_db.json' } else { $null }
 
 # 3. Classificação de prêmios nas 7 categorias oficiais
 function Classify-Prizes($treasuresList) {
@@ -221,22 +214,10 @@ function Sync-ChestData {
         try {
             $bytes = [System.Text.Encoding]::UTF8.GetBytes($summaryJson)
             Invoke-RestMethod -Uri "https://fortnite-ranking-ac8c4-default-rtdb.firebaseio.com/players/$playerId.json" -Method Put -Body $bytes -ContentType 'application/json; charset=utf-8' -TimeoutSec 5 | Out-Null
+            $script:lastHash = $currentHash # so marca como enviado se o Firebase aceitou
         } catch {
             Write-Host "[!] Erro ao enviar para o Firebase: $($_.Exception.Message)" -ForegroundColor Yellow
         }
-
-
-        # 3. Mantem copia de backup no ranking_db.json local (sem tocar no Git)
-        if ($dbFile -and (Test-Path $dbFile)) {
-            try {
-                $dbObj = Get-Content $dbFile -Raw -Encoding UTF8 | ConvertFrom-Json
-                if (-not $dbObj.players) { $dbObj | Add-Member -MemberType NoteProperty -Name 'players' -Value ([PSCustomObject]@{}) }
-                $dbObj.players | Add-Member -MemberType NoteProperty -Name $playerId -Value ($summaryJson | ConvertFrom-Json) -Force
-                $dbObj.updatedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
-                $dbObj | ConvertTo-Json -Depth 8 | Set-Content $dbFile -Encoding UTF8
-            } catch {}
-        }
-        $script:lastHash = $currentHash
     } catch {
         Write-Host "[!] Erro: $($_.Exception.Message) na linha $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Red
     } finally {
@@ -244,10 +225,10 @@ function Sync-ChestData {
     }
 }
 
-Write-Host "[*] Monitorando seus baus em tempo real... Mantenha esta janela aberta!`n" -ForegroundColor Cyan
+Write-Host "[*] Monitorando seus baus (envio a cada 2 min se houver mudanca)... Mantenha esta janela aberta!`n" -ForegroundColor Cyan
 Sync-ChestData
 
 while ($true) {
-    Start-Sleep -Seconds 2
+    Start-Sleep -Seconds 120 # envia no maximo 1x a cada 2 min, e so se mudou
     Sync-ChestData
 }

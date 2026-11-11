@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
@@ -773,10 +773,6 @@
 
       <div class="footer-bar hide-obs">
         <span id="statusFooter">AO VIVO</span>
-        <label style="cursor:pointer; color:var(--text); font-weight:800" title="Enviar matches.csv ou data.json">
-          + ENVIAR ARQUIVO
-          <input type="file" id="manualFileInput" accept=".csv,.json" style="display:none" />
-        </label>
       </div>
     </div>
 
@@ -1310,65 +1306,19 @@
         .replace(/"/g, '&quot;');
     }
 
+    // Firebase e a unica fonte do ranking; GitHub so serve este HTML.
     async function loadRanking() {
       try {
-        const res = await fetch(`${FIREBASE_URL}/.json?t=` + Date.now(), { cache: 'no-store' });
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.players) {
-            currentState = { ...data, players: Object.values(data.players) };
-            render();
-            return;
-          }
+        const res = await fetch(`${FIREBASE_URL}/.json`, { cache: 'no-store' });
+        const data = res.ok ? await res.json() : null;
+        if (data) {
+          currentState = { ...currentState, ...data, players: Object.values(data.players || {}) };
+          render();
         }
-      } catch (e) {}
-
-      try {
-        const res = await fetch('ranking_db.json?t=' + Date.now(), { cache: 'no-store' });
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.players) {
-            currentState = { ...data, players: Object.values(data.players) };
-            render();
-          }
-        }
-      } catch (e) {}
-    }
-
-    function connectStream() {
-      try {
-        const fbEs = new EventSource(`${FIREBASE_URL}/players.json`);
-        fbEs.addEventListener('put', (event) => {
-          try {
-            const payload = JSON.parse(event.data);
-            if (payload.path === '/' && payload.data) {
-              currentState.players = Object.values(payload.data);
-              render();
-            } else if (payload.path && payload.data) {
-              const pId = payload.path.replace(/^\//, '');
-              if (!currentState.players) currentState.players = [];
-              const idx = currentState.players.findIndex(p => p.id === pId);
-              if (idx >= 0) {
-                currentState.players[idx] = payload.data;
-              } else {
-                currentState.players.push(payload.data);
-              }
-              render();
-            }
-          } catch (e) {}
-        });
-
-        fbEs.addEventListener('patch', () => loadRanking());
       } catch (e) {}
     }
 
     loadRanking();
-    connectStream();
-    setInterval(loadRanking, 30000);
-
-    const reloadSec = parseInt(params.get('reload') || '180', 10);
-    if (reloadSec > 0) {
-      setTimeout(() => window.location.reload(), reloadSec * 1000);
-    }
-</body>
+    setInterval(loadRanking, 120000);
+  </script></body>
 </html>
