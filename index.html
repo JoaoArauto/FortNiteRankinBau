@@ -603,6 +603,130 @@
       bottom: 18px;
       right: 18px;
       z-index: 9999;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .obs-fab-btn.secondary {
+      background: rgba(20, 25, 36, 0.95);
+      color: var(--hud-highlight);
+      border: 2px solid var(--hud-border);
+    }
+
+    .obs-fab-btn.secondary:hover {
+      background: rgba(35, 42, 60, 0.98);
+      border-color: var(--hud-highlight);
+    }
+
+    /* Modal de Personalizacao de Cores */
+    .theme-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .theme-label {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .theme-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .color-chip {
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      transform: skewX(-8deg);
+      padding: 0;
+    }
+
+    .color-chip:hover, .color-chip.active {
+      transform: skewX(-8deg) scale(1.15);
+      border-color: #ffffff;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+    }
+
+    .color-input-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--hud-row);
+      border: 1px solid var(--hud-border);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .color-input-wrap input[type="color"] {
+      -webkit-appearance: none;
+      border: none;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      background: transparent;
+      padding: 0;
+    }
+
+    .theme-btn-group {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .theme-btn {
+      background: var(--hud-row);
+      color: var(--text);
+      border: 1px solid var(--hud-border);
+      padding: 8px 12px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-align: center;
+      transform: skewX(-4deg);
+    }
+
+    .theme-btn:hover, .theme-btn.active {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: var(--hud-highlight);
+      color: var(--hud-highlight);
+    }
+
+    .theme-reset-btn {
+      background: transparent;
+      color: var(--muted);
+      border: 1px dashed var(--hud-border);
+      padding: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: color 0.15s ease, border-color 0.15s ease;
+      margin-top: 4px;
+    }
+
+    .theme-reset-btn:hover {
+      color: #f87171;
+      border-color: #f87171;
     }
 
     .obs-fab-btn {
@@ -778,6 +902,7 @@
             ⬇ BAIXAR CONNECTR
           </a>
           <button class="icon-btn" onclick="copyShareLink(this)" title="Copiar link">🔗</button>
+          <button class="icon-btn" onclick="toggleThemeModal()" title="Personalizar Cores do Site (Navegador)">🎨</button>
           <button class="icon-btn" onclick="toggleObsModal()" title="Links para OBS Studio (Browser Source)">🎥</button>
         </div>
       </div>
@@ -834,8 +959,11 @@
     </div>
   </div>
 
-  <!-- BOTAO FLUTUANTE NO CANTO DA TELA: LINKS OBS -->
+  <!-- BOTOES FLUTUANTES NO CANTO DA TELA -->
   <div class="obs-floating hide-obs">
+    <button class="obs-fab-btn secondary" onclick="toggleThemeModal()" title="Personalizar Cores do Site (Navegador)">
+      🎨 CORES
+    </button>
     <button class="obs-fab-btn" onclick="toggleObsModal()" title="Links para OBS Studio (Browser Source)">
       🎥 LINKS DO OBS
     </button>
@@ -873,6 +1001,46 @@
         </div>
         <button class="ol-copy-bar" onclick="copyObsUrl('&widget=checklist', this)" title="Clique para copiar"><span class="ol-copy-label">?obs=1&widget=checklist</span><span class="clip-icon">📋</span></button>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE PERSONALIZACAO DE CORES (LOCAL / NAVEGADOR) -->
+  <div id="themeModal" class="obs-modal-backdrop hide-obs" onclick="if(event.target===this) toggleThemeModal()">
+    <div class="obs-modal-card">
+      <div class="obs-modal-head">
+        <span>🎨 PERSONALIZAR CORES</span>
+        <button class="icon-btn" onclick="toggleThemeModal()">✕</button>
+      </div>
+      <p class="obs-modal-sub">Escolha as cores do seu HUD. As alterações são salvas <b>apenas no seu navegador</b> e não afetam outros usuários ou o OBS padrão.</p>
+
+      <div class="theme-group">
+        <span class="theme-label">Cor de Destaque (HUD Highlight):</span>
+        <div class="theme-chips">
+          <button class="color-chip" data-color="#facc15" style="background:#facc15" onclick="setHighlightColor('#facc15')" title="Dourado Padrão"></button>
+          <button class="color-chip" data-color="#38bdf8" style="background:#38bdf8" onclick="setHighlightColor('#38bdf8')" title="Ciano Fortnite"></button>
+          <button class="color-chip" data-color="#c084fc" style="background:#c084fc" onclick="setHighlightColor('#c084fc')" title="Roxo Épico"></button>
+          <button class="color-chip" data-color="#fb923c" style="background:#fb923c" onclick="setHighlightColor('#fb923c')" title="Laranja Lendário"></button>
+          <button class="color-chip" data-color="#4ade80" style="background:#4ade80" onclick="setHighlightColor('#4ade80')" title="Verde Incomum"></button>
+          <button class="color-chip" data-color="#f43f5e" style="background:#f43f5e" onclick="setHighlightColor('#f43f5e')" title="Rosa Neon"></button>
+          <button class="color-chip" data-color="#ef4444" style="background:#ef4444" onclick="setHighlightColor('#ef4444')" title="Vermelho Alerta"></button>
+          <label class="color-input-wrap" title="Escolha qualquer cor livre">
+            <input type="color" id="themeCustomColor" onchange="setHighlightColor(this.value)">
+            <span>Livre</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="theme-group">
+        <span class="theme-label">Estilo de Fundo:</span>
+        <div class="theme-btn-group">
+          <button class="theme-btn" data-bg="default" onclick="setBgTheme('default')">Padrão HUD</button>
+          <button class="theme-btn" data-bg="amoled" onclick="setBgTheme('amoled')">Preto AMOLED</button>
+          <button class="theme-btn" data-bg="midnight" onclick="setBgTheme('midnight')">Meia-Noite</button>
+          <button class="theme-btn" data-bg="cyberpunk" onclick="setBgTheme('cyberpunk')">Cyberpunk</button>
+        </div>
+      </div>
+
+      <button class="theme-reset-btn" onclick="resetThemeColors()">↺ Restaurar Cores Padrão</button>
     </div>
   </div>
 
@@ -1008,6 +1176,106 @@
       document.documentElement.classList.toggle('obs-mode');
       document.body.classList.toggle('obs-mode');
     }
+
+
+    /* ==========================================
+       PERSONALIZACAO DE CORES (LOCALSTORAGE)
+       ========================================== */
+    const DEFAULT_THEME = {
+      highlight: '#facc15',
+      bgTheme: 'default'
+    };
+
+    const BG_THEMES = {
+      default: {
+        bodyBg: '#090b10',
+        hudBg: 'rgba(12, 15, 22, 0.90)',
+        hudRow: 'rgba(20, 25, 36, 0.88)',
+        hudRowHover: 'rgba(28, 35, 50, 0.95)'
+      },
+      amoled: {
+        bodyBg: '#000000',
+        hudBg: 'rgba(7, 7, 7, 0.95)',
+        hudRow: 'rgba(18, 18, 18, 0.92)',
+        hudRowHover: 'rgba(30, 30, 30, 0.98)'
+      },
+      midnight: {
+        bodyBg: '#030712',
+        hudBg: 'rgba(15, 23, 42, 0.92)',
+        hudRow: 'rgba(30, 41, 59, 0.88)',
+        hudRowHover: 'rgba(51, 65, 85, 0.95)'
+      },
+      cyberpunk: {
+        bodyBg: '#0a0014',
+        hudBg: 'rgba(23, 7, 43, 0.92)',
+        hudRow: 'rgba(38, 13, 71, 0.88)',
+        hudRowHover: 'rgba(60, 22, 110, 0.95)'
+      }
+    };
+
+    function getSavedTheme() {
+      try {
+        const raw = localStorage.getItem('fortnite_chest_hud_theme_v1');
+        return raw ? { ...DEFAULT_THEME, ...JSON.parse(raw) } : { ...DEFAULT_THEME };
+      } catch (e) {
+        return { ...DEFAULT_THEME };
+      }
+    }
+
+    function saveTheme(theme) {
+      try {
+        localStorage.setItem('fortnite_chest_hud_theme_v1', JSON.stringify(theme));
+      } catch (e) {}
+    }
+
+    function applyTheme(theme) {
+      const root = document.documentElement;
+      root.style.setProperty('--hud-highlight', theme.highlight || DEFAULT_THEME.highlight);
+
+      const bgConf = BG_THEMES[theme.bgTheme] || BG_THEMES.default;
+      root.style.setProperty('--hud-bg', bgConf.hudBg);
+      root.style.setProperty('--hud-row', bgConf.hudRow);
+      root.style.setProperty('--hud-row-hover', bgConf.hudRowHover);
+
+      if (!document.body.classList.contains('obs-mode')) {
+        document.body.style.background = bgConf.bodyBg;
+      }
+
+      document.querySelectorAll('.color-chip').forEach(c => {
+        c.classList.toggle('active', c.getAttribute('data-color') === theme.highlight);
+      });
+      document.querySelectorAll('.theme-btn').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-bg') === theme.bgTheme);
+      });
+      const picker = document.getElementById('themeCustomColor');
+      if (picker) picker.value = theme.highlight;
+    }
+
+    function setHighlightColor(color) {
+      const theme = getSavedTheme();
+      theme.highlight = color;
+      saveTheme(theme);
+      applyTheme(theme);
+    }
+
+    function setBgTheme(bgKey) {
+      const theme = getSavedTheme();
+      theme.bgTheme = bgKey;
+      saveTheme(theme);
+      applyTheme(theme);
+    }
+
+    function resetThemeColors() {
+      saveTheme(DEFAULT_THEME);
+      applyTheme(DEFAULT_THEME);
+    }
+
+    function toggleThemeModal() {
+      const modal = document.getElementById('themeModal');
+      if (modal) modal.classList.toggle('active');
+    }
+
+    applyTheme(getSavedTheme());
 
     function toggleObsModal() {
       const modal = document.getElementById('obsModal');
