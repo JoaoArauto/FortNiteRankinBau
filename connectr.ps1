@@ -2,29 +2,71 @@
 $ErrorActionPreference = 'Continue'
 
 Write-Host "========================================================" -ForegroundColor Cyan
-Write-Host "  FORTNITE CHEST RANKING - CONNECTR (POWERSHELL NATIVO)" -ForegroundColor Cyan
+Write-Host "     FORTNITE CHEST RANKING - CONNECTR" -ForegroundColor Yellow
+Write-Host "========================================================" -ForegroundColor Cyan
+Write-Host "  * Engine de Replay : ChestCounter (por LED-N)" -ForegroundColor Gray
+Write-Host "  * Sincronizacao    : Firebase Realtime Database" -ForegroundColor Gray
+Write-Host "  * Intervalo        : A cada 2 min (somente com alteracoes)" -ForegroundColor Gray
 Write-Host "========================================================`n" -ForegroundColor Cyan
 
-# 1. Procura e inicia o ChestCounter / ChestTracker se ainda não estiver aberto
+# 1. Procura, baixa (se necessario) e inicia o ChestCounter
 function Launch-ChestTracker {
     $running = Get-Process -Name 'ChestCounter', 'ChestTracker' -ErrorAction SilentlyContinue
     if ($running) {
-        Write-Host "[+] ChestCounter / ChestTracker ja esta aberto e rodando!" -ForegroundColor Green
+        Write-Host "[+] ChestCounter ja esta aberto e rodando em segundo plano!" -ForegroundColor Green
         return
     }
 
     $candidates = @(
+        (Join-Path $PSScriptRoot 'ChestCounter.exe'),
+        (Join-Path $PSScriptRoot 'ChestTracker.exe'),
         (Join-Path $env:USERPROFILE 'Downloads\ChestCounter.exe'),
         (Join-Path $env:USERPROFILE 'Downloads\ChestTracker.exe'),
         (Join-Path $env:USERPROFILE 'Desktop\ChestCounter.exe'),
-        (Join-Path $env:USERPROFILE 'Desktop\ChestTracker.exe'),
-        (Join-Path $PSScriptRoot 'ChestCounter.exe'),
-        (Join-Path $PSScriptRoot 'ChestTracker.exe')
+        (Join-Path $env:USERPROFILE 'Desktop\ChestTracker.exe')
     )
 
     $found = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+
+    # Se nao encontrou em nenhuma pasta comum, baixa direto do repositorio oficial do LED-N!
+    if (-not $found) {
+        Write-Host "[*] ChestCounter.exe nao foi encontrado no seu computador." -ForegroundColor Yellow
+        Write-Host "[*] Baixando automaticamente do repositorio oficial (LED-N/Fortnite-ChestCounter)..." -ForegroundColor Cyan
+
+        $downloadDest = Join-Path $PSScriptRoot 'ChestCounter.exe'
+        $primaryUrl = 'https://github.com/LED-N/Fortnite-ChestCounter/releases/latest/download/ChestCounter.exe'
+        $fallbackUrl = 'https://github.com/LED-N/Fortnite-ChestCounter/releases/download/v1.4.0/ChestCounter.exe'
+
+        $downloadOk = $false
+        try {
+            $wc = New-Object System.Net.WebClient
+            $wc.Headers.Add('User-Agent', 'PowerShell-ChestRanking')
+            $wc.DownloadFile($primaryUrl, $downloadDest)
+            if ((Test-Path $downloadDest) -and ((Get-Item $downloadDest).Length -gt 10000000)) {
+                $downloadOk = $true
+            }
+        } catch {
+            try {
+                $wc = New-Object System.Net.WebClient
+                $wc.Headers.Add('User-Agent', 'PowerShell-ChestRanking')
+                $wc.DownloadFile($fallbackUrl, $downloadDest)
+                if ((Test-Path $downloadDest) -and ((Get-Item $downloadDest).Length -gt 10000000)) {
+                    $downloadOk = $true
+                }
+            } catch {}
+        }
+
+        if ($downloadOk) {
+            Write-Host "[+] ChestCounter.exe baixado com sucesso! Salvo em: $downloadDest" -ForegroundColor Green
+            $found = $downloadDest
+        } else {
+            Write-Host "[!] Nao foi possivel baixar o ChestCounter automaticamente." -ForegroundColor Red
+            Write-Host "    Baixe manualmente pelo repositorio: https://github.com/LED-N/Fortnite-ChestCounter/releases`n" -ForegroundColor Yellow
+        }
+    }
+
     if ($found) {
-        Write-Host "[*] Abrindo $(Split-Path $found -Leaf) automaticamente ($found)..." -ForegroundColor Yellow
+        Write-Host "[*] Iniciando $(Split-Path $found -Leaf)..." -ForegroundColor Yellow
         try {
             Start-Process -FilePath $found
             Start-Sleep -Seconds 3
@@ -32,18 +74,15 @@ function Launch-ChestTracker {
         } catch {
             Write-Host "[!] Erro ao iniciar ChestCounter: $($_.Exception.Message)" -ForegroundColor Red
         }
-    } else {
-        Write-Host "[!] ChestCounter.exe nao foi encontrado nas pastas comuns. Por favor, abra-o manualmente se for jogar.`n" -ForegroundColor Yellow
     }
 }
 
 Launch-ChestTracker
 
-# 2. Localização das pastas de dados e repositório
+# 2. Localização das pastas de dados do ChestCounter
 $localChestDir = Join-Path $env:APPDATA 'ChestCounter'
 $csvFile = Join-Path $localChestDir 'matches.csv'
 $ovlFile = Join-Path $localChestDir 'overlay.html'
-
 
 # 3. Classificação de prêmios nas 7 categorias oficiais
 function Classify-Prizes($treasuresList) {
@@ -77,7 +116,7 @@ $isSyncing = $false
 function Sync-ChestData {
     if ($script:isSyncing) { return }
     if (-not (Test-Path $csvFile)) {
-        Write-Host "[!] matches.csv ainda nao encontrado em $localChestDir. Jogue uma partida com ChestCounter aberto!" -ForegroundColor Yellow
+        Write-Host "[!] matches.csv ainda nao encontrado em $localChestDir. Jogue uma partida no Fortnite com o ChestCounter aberto para gerar o arquivo!" -ForegroundColor Yellow
         return
     }
 
@@ -208,13 +247,19 @@ function Sync-ChestData {
         $summaryJson = $summary | ConvertTo-Json -Depth 6 -Compress
 
         $timeStr = (Get-Date).ToString('HH:mm:ss')
-        Write-Host "[$timeStr] Partidas processadas! Nick: $player | Baus: $finalChests | Partidas: $matchesCount | Vitorias: $wins" -ForegroundColor Green
+        Write-Host "[$timeStr] Sincronizado! Jogador: $player | Total Baus: $finalChests | Partidas: $matchesCount | Vitorias: $wins" -ForegroundColor Green
 
-        # 1. Envia instantaneamente para o Firebase Realtime Database (Nuvem em tempo real independente do GitHub)
+        # Envia para o Firebase Realtime Database
         try {
             $bytes = [System.Text.Encoding]::UTF8.GetBytes($summaryJson)
             Invoke-RestMethod -Uri "https://fortnite-ranking-ac8c4-default-rtdb.firebaseio.com/players/$playerId.json" -Method Put -Body $bytes -ContentType 'application/json; charset=utf-8' -TimeoutSec 5 | Out-Null
-            $script:lastHash = $currentHash # so marca como enviado se o Firebase aceitou
+            
+            # Atualiza carimbo global de atualizacao
+            $nowIso = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+            $nowBytes = [System.Text.Encoding]::UTF8.GetBytes('"' + $nowIso + '"')
+            Invoke-RestMethod -Uri "https://fortnite-ranking-ac8c4-default-rtdb.firebaseio.com/updatedAt.json" -Method Put -Body $nowBytes -ContentType 'application/json; charset=utf-8' -TimeoutSec 5 | Out-Null
+
+            $script:lastHash = $currentHash # so marca como enviado se o Firebase aceitou com sucesso
         } catch {
             Write-Host "[!] Erro ao enviar para o Firebase: $($_.Exception.Message)" -ForegroundColor Yellow
         }
@@ -225,10 +270,11 @@ function Sync-ChestData {
     }
 }
 
-Write-Host "[*] Monitorando seus baus (envio a cada 2 min se houver mudanca)... Mantenha esta janela aberta!`n" -ForegroundColor Cyan
+Write-Host "[*] Monitorando partidas em tempo real (checagem local a cada 2 min)..." -ForegroundColor Cyan
+Write-Host "[*] Mantenha esta janela aberta enquanto joga Fortnite!`n" -ForegroundColor Gray
 Sync-ChestData
 
 while ($true) {
-    Start-Sleep -Seconds 120 # envia no maximo 1x a cada 2 min, e so se mudou
+    Start-Sleep -Seconds 120 # checa a cada 2 min, e so envia se o arquivo local teve mudanca
     Sync-ChestData
 }
