@@ -142,22 +142,18 @@ function Sync-ChestData {
     $script:isSyncing = $true
     try {
         $lines = @($csvContent -split "`r?`n") | Where-Object { $_.Trim() -ne '' }
-        $player = 'Jogador'
-        $matchList = [System.Collections.ArrayList]::new()
-        $treasuresList = [System.Collections.ArrayList]::new()
-        $totalChests = 0
-        $totalAmmo = 0
-        $wins = 0
-        $bestMatch = 0
-        $todayPrefix = (Get-Date).ToString('yyyy-MM-dd')
-        $todayChests = 0
+        $playersMap = [System.Collections.Generic.Dictionary[string, object]]::new([System.StringComparer]::OrdinalIgnoreCase)
+        $latestPlayerName = 'Jogador'
 
         for ($i = 1; $i -lt $lines.Count; $i++) {
             $parts = $lines[$i].Split(';')
             if ($parts.Length -lt 6) { continue }
             $date = $parts[0]
             $mode = $parts[1]
-            $pName = $parts[2]
+            $pName = $parts[2].Trim()
+            if (-not $pName) { $pName = 'Jogador' }
+            $latestPlayerName = $pName
+
             $placement = 0; [int]::TryParse($parts[3], [ref]$placement) | Out-Null
             $totalPlayers = 0; [int]::TryParse($parts[4], [ref]$totalPlayers) | Out-Null
             $chests = 0; [int]::TryParse($parts[5], [ref]$chests) | Out-Null
@@ -165,21 +161,16 @@ function Sync-ChestData {
             $treasures = if ($parts.Length -gt 7) { $parts[7] } else { '' }
             $replayFile = if ($parts.Length -gt 8) { $parts[8] } else { '' }
 
-            if ($pName) { $player = $pName }
-            $totalChests += $chests
-            $totalAmmo += $ammo
-            if ($placement -eq 1) { $wins++ }
-            if ($chests -gt $bestMatch) { $bestMatch = $chests }
-            if ($date.StartsWith($todayPrefix)) { $todayChests += $chests }
-
-            if ($treasures.Trim()) {
-                foreach ($t in ($treasures -split ',')) {
-                    $item = $t.Trim()
-                    if ($item) { $treasuresList.Add([PSCustomObject]@{ date = $date; item = $item }) | Out-Null }
+            if (-not $playersMap.ContainsKey($pName)) {
+                $playersMap[$pName] = @{
+                    displayName = $pName
+                    matches = [System.Collections.ArrayList]::new()
                 }
+            } else {
+                $playersMap[$pName].displayName = $pName
             }
 
-            $matchList.Add([PSCustomObject]@{
+            $playersMap[$pName].matches.Add([PSCustomObject]@{
                 date = $date
                 mode = $mode
                 player = $pName
@@ -205,64 +196,101 @@ function Sync-ChestData {
             }
         }
 
-        $finalChests = if ($overlayTotal -and $overlayTotal -gt $totalChests) { $overlayTotal } else { $totalChests }
-        $matchesCount = $matchList.Count
-        $avgChests = if ($matchesCount -gt 0) { [math]::Round($finalChests / $matchesCount, 1) } else { 0 }
-        $last5Chests = 0
-        if ($matchList.Count -gt 0) {
-            $last5Start = [Math]::Max(0, $matchList.Count - 5)
-            for ($k = $last5Start; $k -lt $matchList.Count; $k++) { $last5Chests += $matchList[$k].chests }
+        $todayPrefix = (Get-Date).ToString('yyyy-MM-dd')
+
+        # Itera por CADA jogador encontrado isoladamente (filtragem estrita por nick)
+        foreach ($entry in $playersMap.Values) {
+            $player = $entry.displayName
+            $playerId = ($player.ToLower() -replace '[^a-z0-9_-]', '_')
+            $matchList = $entry.matches
+            $treasuresList = [System.Collections.ArrayList]::new()
+            $totalChests = 0
+            $totalAmmo = 0
+            $wins = 0
+            $bestMatch = 0
+            $todayChests = 0
+
+            foreach ($m in $matchList) {
+                # Filtro estrito: apenas partidas com o mesmo nick
+                if ($m.player -ne $player -and $m.player.ToLower() -ne $player.ToLower()) { continue }
+
+                $totalChests += $m.chests
+                $totalAmmo += $m.ammo
+                if ($m.placement -eq 1) { $wins++ }
+                if ($m.chests -gt $bestMatch) { $bestMatch = $m.chests }
+                if ($m.date.StartsWith($todayPrefix)) { $todayChests += $m.chests }
+
+                if ($m.treasures -and $m.treasures.Trim()) {
+                    foreach ($t in ($m.treasures -split ',')) {
+                        $item = $t.Trim()
+                        if ($item) { $treasuresList.Add([PSCustomObject]@{ date = $m.date; item = $item }) | Out-Null }
+                    }
+                }
+            }
+
+            # Overlay ao vivo (inProgress e sessionText) so se aplica ao jogador ativo mais recente na maquina
+            $isThisActive = ($player.ToLower() -eq $latestPlayerName.ToLower())
+            $playerInProgress = if ($isThisActive) { $inProgress } else { $false }
+            $playerSession = if ($isThisActive) { $sessionText } else { '' }
+            $finalChests = if ($isThisActive -and $overlayTotal -and $overlayTotal -gt $totalChests) { $overlayTotal } else { $totalChests }
+
+            $matchesCount = $matchList.Count
+            $avgChests = if ($matchesCount -gt 0) { [math]::Round($finalChests / $matchesCount, 1) } else { 0 }
+            $last5Chests = 0
+            if ($matchList.Count -gt 0) {
+                $last5Start = [Math]::Max(0, $matchList.Count - 5)
+                for ($k = $last5Start; $k -lt $matchList.Count; $k++) { $last5Chests += $matchList[$k].chests }
+            }
+
+            $prizes = Classify-Prizes $treasuresList
+            $recent = if ($matchList.Count -gt 15) { @($matchList[($matchList.Count - 15)..($matchList.Count - 1)]) } else { $matchList.ToArray() }
+            [array]::Reverse($recent)
+            $lastMatch = if ($matchList.Count -gt 0) { $matchList[$matchList.Count - 1] } else { $null }
+
+            $summary = [PSCustomObject]@{
+                id = $playerId
+                player = $player
+                pcName = $env:COMPUTERNAME
+                totalChests = $finalChests
+                totalAmmo = $totalAmmo
+                matchesCount = $matchesCount
+                wins = $wins
+                bestMatch = $bestMatch
+                avgChests = $avgChests
+                todayChests = $todayChests
+                last5Chests = $last5Chests
+                treasuresCount = $treasuresList.Count
+                treasuresList = if ($treasuresList.Count -gt 25) { @($treasuresList[($treasuresList.Count - 25)..($treasuresList.Count - 1)]) } else { @($treasuresList) }
+                prizes = $prizes
+                inProgress = $playerInProgress
+                sessionText = $playerSession
+                lastMatch = $lastMatch
+                recentMatches = $recent
+                lastUpdated = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+                lastUpdatedMs = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+            }
+
+            $summaryJson = $summary | ConvertTo-Json -Depth 6 -Compress
+
+            $timeStr = (Get-Date).ToString('HH:mm:ss')
+            Write-Host "[$timeStr] Sincronizado! Jogador: $player | Total Baus: $finalChests | Partidas: $matchesCount | Vitorias: $wins" -ForegroundColor Green
+
+            # Envia para o Firebase Realtime Database
+            try {
+                $bytes = [System.Text.Encoding]::UTF8.GetBytes($summaryJson)
+                Invoke-RestMethod -Uri "https://fortnite-ranking-ac8c4-default-rtdb.firebaseio.com/players/$playerId.json" -Method Put -Body $bytes -ContentType 'application/json; charset=utf-8' -TimeoutSec 5 | Out-Null
+            } catch {
+                Write-Host "[!] Erro ao enviar para o Firebase ($player): $($_.Exception.Message)" -ForegroundColor Yellow
+            }
         }
 
-        $prizes = Classify-Prizes $treasuresList
-        $recent = if ($matchList.Count -gt 15) { @($matchList[($matchList.Count - 15)..($matchList.Count - 1)]) } else { $matchList.ToArray() }
-        [array]::Reverse($recent)
-        $lastMatch = if ($matchList.Count -gt 0) { $matchList[$matchList.Count - 1] } else { $null }
-
-        $playerId = ($player.ToLower() -replace '[^a-z0-9_-]', '_')
-
-        $summary = [PSCustomObject]@{
-            id = $playerId
-            player = $player
-            pcName = $env:COMPUTERNAME
-            totalChests = $finalChests
-            totalAmmo = $totalAmmo
-            matchesCount = $matchesCount
-            wins = $wins
-            bestMatch = $bestMatch
-            avgChests = $avgChests
-            todayChests = $todayChests
-            last5Chests = $last5Chests
-            treasuresCount = $treasuresList.Count
-            treasuresList = if ($treasuresList.Count -gt 25) { @($treasuresList[($treasuresList.Count - 25)..($treasuresList.Count - 1)]) } else { @($treasuresList) }
-            prizes = $prizes
-            inProgress = $inProgress
-            sessionText = $sessionText
-            lastMatch = $lastMatch
-            recentMatches = $recent
-            lastUpdated = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
-            lastUpdatedMs = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
-        }
-
-        $summaryJson = $summary | ConvertTo-Json -Depth 6 -Compress
-
-        $timeStr = (Get-Date).ToString('HH:mm:ss')
-        Write-Host "[$timeStr] Sincronizado! Jogador: $player | Total Baus: $finalChests | Partidas: $matchesCount | Vitorias: $wins" -ForegroundColor Green
-
-        # Envia para o Firebase Realtime Database
+        # Atualiza carimbo global de atualizacao
         try {
-            $bytes = [System.Text.Encoding]::UTF8.GetBytes($summaryJson)
-            Invoke-RestMethod -Uri "https://fortnite-ranking-ac8c4-default-rtdb.firebaseio.com/players/$playerId.json" -Method Put -Body $bytes -ContentType 'application/json; charset=utf-8' -TimeoutSec 5 | Out-Null
-            
-            # Atualiza carimbo global de atualizacao
             $nowIso = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
             $nowBytes = [System.Text.Encoding]::UTF8.GetBytes('"' + $nowIso + '"')
             Invoke-RestMethod -Uri "https://fortnite-ranking-ac8c4-default-rtdb.firebaseio.com/updatedAt.json" -Method Put -Body $nowBytes -ContentType 'application/json; charset=utf-8' -TimeoutSec 5 | Out-Null
-
             $script:lastHash = $currentHash # so marca como enviado se o Firebase aceitou com sucesso
-        } catch {
-            Write-Host "[!] Erro ao enviar para o Firebase: $($_.Exception.Message)" -ForegroundColor Yellow
-        }
+        } catch {}
     } catch {
         Write-Host "[!] Erro: $($_.Exception.Message) na linha $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Red
     } finally {

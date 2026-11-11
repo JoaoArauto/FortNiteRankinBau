@@ -1592,7 +1592,7 @@
               </div>
               <table class="mini-table">
                 <tbody>
-                  ${(p.recentMatches || []).slice(0, 5).map(m => `
+                  ${(p.recentMatches || []).filter(m => !m.player || m.player.toLowerCase() === (p.player || '').toLowerCase()).slice(0, 5).map(m => `
                     <tr>
                       <td>${escapeHtml((m.date || '').slice(5))}</td>
                       <td>${m.placement === 1 ? '👑 VITÓRIA ROYALE' : `${m.placement}º LUGAR`}</td>
