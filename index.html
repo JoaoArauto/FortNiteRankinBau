@@ -706,27 +706,42 @@
       font-weight: 600;
     }
 
-    .ol-copy-btn {
-      background: rgba(250, 204, 21, 0.16);
-      border: 1px solid rgba(250, 204, 21, 0.6);
+    .ol-copy-bar {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #090a0f;
+      border: 1px solid rgba(250, 204, 21, 0.45);
+      border-radius: 4px;
       color: var(--hud-highlight);
       font-family: "Barlow Condensed", sans-serif;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 800;
-      text-transform: uppercase;
-      padding: 7px 14px;
+      padding: 7px 12px;
       cursor: pointer;
       white-space: nowrap;
-      transform: skewX(-5deg);
       transition: all 0.15s ease;
+      user-select: none;
     }
 
-    .ol-copy-btn:hover {
-      background: rgba(250, 204, 21, 0.35);
+    .ol-copy-bar:hover {
+      background: rgba(250, 204, 21, 0.18);
+      border-color: var(--hud-highlight);
       color: #fff;
     }
 
-    .ol-copy-btn.copied {
+    .ol-copy-bar .clip-icon {
+      font-size: 15px;
+      line-height: 1;
+      display: inline-block;
+      transition: transform 0.15s ease;
+    }
+
+    .ol-copy-bar:hover .clip-icon {
+      transform: scale(1.2);
+    }
+
+    .ol-copy-bar.copied {
       background: #22c55e !important;
       border-color: #22c55e !important;
       color: #0b0c10 !important;
@@ -763,7 +778,7 @@
             ⬇ BAIXAR CONNECTR
           </a>
           <button class="icon-btn" onclick="copyShareLink(this)" title="Copiar link">🔗</button>
-          <button class="icon-btn" onclick="toggleObsMode()" title="Fundo Transparente (OBS)">🎥</button>
+          <button class="icon-btn" onclick="toggleObsModal()" title="Links para OBS Studio (Browser Source)">🎥</button>
         </div>
       </div>
 
@@ -840,7 +855,7 @@
           <span class="ol-title">🧰 PAINEL COMPLETO (HUD)</span>
           <span class="ol-desc">Ranking + Metas Loja Pirata · Tam: 1120 × 520</span>
         </div>
-        <button class="ol-copy-btn" onclick="copyObsUrl('', this)">COPIAR LINK</button>
+        <button class="ol-copy-bar" onclick="copyObsUrl('', this)" title="Clique para copiar"><span class="ol-copy-label">?obs=1</span><span class="clip-icon">📋</span></button>
       </div>
 
       <div class="obs-link-row">
@@ -848,7 +863,7 @@
           <span class="ol-title">🏆 APENAS RANKING DE BAÚS</span>
           <span class="ol-desc">Lista dos jogadores ao vivo · Tam: 540 × 480</span>
         </div>
-        <button class="ol-copy-btn" onclick="copyObsUrl('&widget=ranking', this)">COPIAR LINK</button>
+        <button class="ol-copy-bar" onclick="copyObsUrl('&widget=ranking', this)" title="Clique para copiar"><span class="ol-copy-label">?obs=1&widget=ranking</span><span class="clip-icon">📋</span></button>
       </div>
 
       <div class="obs-link-row">
@@ -856,7 +871,7 @@
           <span class="ol-title">🏴‍☠️ APENAS METAS DA LOJA PIRATA</span>
           <span class="ol-desc">Checklist e odds do próximo baú · Tam: 540 × 520</span>
         </div>
-        <button class="ol-copy-btn" onclick="copyObsUrl('&widget=checklist', this)">COPIAR LINK</button>
+        <button class="ol-copy-bar" onclick="copyObsUrl('&widget=checklist', this)" title="Clique para copiar"><span class="ol-copy-label">?obs=1&widget=checklist</span><span class="clip-icon">📋</span></button>
       </div>
     </div>
   </div>
@@ -992,6 +1007,33 @@
     function toggleObsMode() {
       document.documentElement.classList.toggle('obs-mode');
       document.body.classList.toggle('obs-mode');
+    }
+
+    function toggleObsModal() {
+      const modal = document.getElementById('obsModal');
+      if (modal) modal.classList.toggle('active');
+    }
+
+    function copyObsUrl(extraParams, btn) {
+      const url = getShareUrl() + '?obs=1' + (extraParams || '');
+      navigator.clipboard.writeText(url).then(() => {
+        const labelEl = btn ? btn.querySelector('.ol-copy-label') : null;
+        const iconEl = btn ? btn.querySelector('.clip-icon') : null;
+        const prevLabel = labelEl ? labelEl.textContent : '';
+        const prevIcon = iconEl ? iconEl.textContent : '📋';
+
+        if (btn) btn.classList.add('copied');
+        if (labelEl) labelEl.textContent = 'COPIADO!';
+        if (iconEl) iconEl.textContent = '✓';
+
+        setTimeout(() => {
+          if (btn) btn.classList.remove('copied');
+          if (labelEl) labelEl.textContent = prevLabel;
+          if (iconEl) iconEl.textContent = prevIcon;
+        }, 1500);
+      }).catch(() => {
+        prompt('Copie o link do OBS abaixo:', url);
+      });
     }
 
     function getShareUrl() {
