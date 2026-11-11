@@ -1523,10 +1523,56 @@
       const dlBtn = document.getElementById('downloadBatBtn');
       if (dlBtn) { dlBtn.href = 'connectr.bat'; dlBtn.setAttribute('download', 'connectr.bat'); }
 
-      const players = [...(currentState.players || [])];
+      // Baus manuais configurados diretamente no Firebase (/manualChests)
+      const manualMap = currentState.manualChests || {};
+      const globalManual = Number(manualMap.global ?? manualMap._global ?? 0) || 0;
+
+      const rawPlayers = [...(currentState.players || [])];
+
+      // Mapeia jogadores somando os baús manuais do banco com os do ChestCounter
+      const players = rawPlayers.map(p => {
+        const pKey = (p.id || '').toLowerCase();
+        const pNameKey = (p.player || '').toLowerCase();
+        const manualFromNode = Number(manualMap[pKey] ?? manualMap[pNameKey] ?? 0) || 0;
+        const manualDirect = Number(p.manualChests || 0) || 0;
+        const totalManual = manualFromNode + manualDirect;
+
+        const baseChests = Number(p.totalChests || 0);
+        return {
+          ...p,
+          baseChests,
+          manualBonus: totalManual,
+          totalChests: baseChests + totalManual
+        };
+      });
+
+      // Se houver jogador definido apenas em manualChests no banco
+      for (const [key, val] of Object.entries(manualMap)) {
+        if (key.startsWith('_') || key === 'global') continue;
+        const numVal = Number(val) || 0;
+        if (numVal <= 0) continue;
+        const cleanKey = key.toLowerCase();
+        if (!players.some(p => (p.id || '').toLowerCase() === cleanKey || (p.player || '').toLowerCase() === cleanKey)) {
+          players.push({
+            id: cleanKey,
+            player: key,
+            baseChests: 0,
+            manualBonus: numVal,
+            totalChests: numVal,
+            todayChests: 0,
+            bestMatch: 0,
+            avgChests: 0,
+            wins: 0,
+            treasuresCount: 0,
+            matchesCount: 0,
+            recentMatches: []
+          });
+        }
+      }
+
       players.sort((a, b) => (b[currentSort] || 0) - (a[currentSort] || 0));
 
-      const totalChests = players.reduce((s, p) => s + (p.totalChests || 0), 0);
+      const totalChests = players.reduce((s, p) => s + (p.totalChests || 0), 0) + globalManual;
       const bestMatch = players.reduce((m, p) => Math.max(m, p.bestMatch || 0), 0);
       const totalTreasures = players.reduce((s, p) => s + (p.treasuresCount || 0), 0);
 
@@ -1574,6 +1620,7 @@
                   <span>REC: <b>${p.bestMatch || 0}</b></span>
                   <span>·</span>
                   <span>MÉD: <b>${p.avgChests || 0}</b></span>
+                  ${p.manualBonus ? `<span>· MANUAL: <b>+${p.manualBonus}</b></span>` : ''}
                   ${lastChests ? `<span>· ${lastChests}</span>` : ''}
                   ${p.wins ? `<span>· 👑 <b>${p.wins}</b></span>` : ''}
                   ${p.treasuresCount ? `<span>· ★ <b>${p.treasuresCount}</b></span>` : ''}
@@ -1587,7 +1634,7 @@
 
             <div class="drawer ${isOpen ? 'open' : ''}">
               <div class="drawer-head">
-                <span>ÚLTIMAS 5 PARTIDAS (${p.matchesCount || 0} NO TOTAL)</span>
+                <span>ÚLTIMAS 5 PARTIDAS (${p.matchesCount || 0} NO TOTAL${p.manualBonus ? ` · AUTO: ${p.baseChests} + MANUAL: ${p.manualBonus}` : ''})</span>
                 <span style="cursor:pointer" onclick="removePlayer(event, '${p.id}', '${escapeHtml(p.player)}')">✕ REMOVER</span>
               </div>
               <table class="mini-table">
@@ -1622,7 +1669,12 @@
         const res = await fetch(`${FIREBASE_URL}/.json`, { cache: 'no-store' });
         const data = res.ok ? await res.json() : null;
         if (data) {
-          currentState = { ...currentState, ...data, players: Object.values(data.players || {}) };
+          currentState = {
+            ...currentState,
+            ...data,
+            manualChests: data.manualChests || {},
+            players: Object.values(data.players || {})
+          };
           render();
         }
       } catch (e) {}
