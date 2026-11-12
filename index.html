@@ -1144,9 +1144,9 @@
   <div id="radioMiniDock" class="radio-mini-dock hide-obs">
     <div class="radio-dock-label">
       <span class="radio-dock-pulse"></span>
-      <span>📻 RÁDIO TOCANDO</span>
+      <span>📻 RÁDIO AO VIVO (MUTADA)</span>
     </div>
-    <button class="radio-dock-btn" onclick="openRadioModal()" title="Abrir painel da rádio">⛶ EXPANDIR</button>
+    <button class="radio-dock-btn" onclick="openRadioModal()" title="Abrir painel da rádio e desmutar">⛶ ABRIR / DESMUTAR</button>
     <button class="radio-dock-btn danger" onclick="stopRadio()" title="Parar rádio">✕ PARAR</button>
   </div>
 
@@ -1160,7 +1160,8 @@
           <button class="icon-btn" onclick="stopRadio()" title="Fechar e parar música">✕</button>
         </div>
       </div>
-      <p class="obs-modal-sub">Toque suas músicas do <b>YouTube Music</b> enquanto acompanha os baús. A música continua tocando em segundo plano quando você minimiza!</p>
+      <p class="obs-modal-sub">Toque suas músicas do <b>YouTube Music</b> em tempo real. O link colocado aqui sincroniza com <b>todas as instâncias e transmissões abertas</b> simultaneamente!</p>
+      <p style="font-size:12px; color:var(--hud-highlight); font-weight:700; margin-top:-6px;">🔇 Reprodução mutada por padrão. Clique no controle de volume do player para desmutar quando quiser ouvir.</p>
 
       <div class="radio-player-box">
         <div id="radioPlaceholder" style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; color:var(--muted); text-align:center; padding:12px;">
@@ -1436,9 +1437,10 @@
     applyTheme(getSavedTheme());
 
     /* ==========================================
-       RADIO YOUTUBE MUSIC
+       RADIO YOUTUBE MUSIC (SINCRONIZADA EM TEMPO REAL)
        ========================================== */
     const DEFAULT_RADIO_URL = 'https://music.youtube.com/playlist?list=PLOHoVaTp8R7dfrJW5pumS0iD_dhlXKv17';
+    let currentActiveRadioUrl = '';
 
     function parseYouTubeMusicUrl(url) {
       if (!url) return '';
@@ -1448,23 +1450,24 @@
         const listId = u.searchParams.get('list');
         const videoId = u.searchParams.get('v') || (u.hostname === 'youtu.be' ? u.pathname.replace(/^\//, '') : null);
 
+        // Sempre adiciona &autoplay=1&mute=1 para iniciar mutada por padrão e permitir autoplay em todos os navegadores
         if (listId) {
-          return `https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(listId)}&autoplay=1`;
+          return `https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(listId)}&autoplay=1&mute=1&enablejsapi=1`;
         }
         if (videoId) {
-          return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?autoplay=1`;
+          return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?autoplay=1&mute=1&enablejsapi=1`;
         }
       } catch (e) {}
 
       if (clean.startsWith('PL') || clean.startsWith('RD') || clean.startsWith('LM')) {
-        return `https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(clean)}&autoplay=1`;
+        return `https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(clean)}&autoplay=1&mute=1&enablejsapi=1`;
       }
       return '';
     }
 
     function getSavedRadioUrl() {
       try {
-        return localStorage.getItem('fortnite_chest_radio_url') || (currentState && currentState.radioUrl) || '';
+        return (currentState && currentState.radioUrl) || localStorage.getItem('fortnite_chest_radio_url') || '';
       } catch (e) {
         return '';
       }
@@ -1483,8 +1486,8 @@
       if (dock) dock.classList.remove('active');
 
       const input = document.getElementById('radioUrlInput');
-      const saved = getSavedRadioUrl();
-      if (input && saved) input.value = saved;
+      const saved = getSavedRadioUrl() || DEFAULT_RADIO_URL;
+      if (input) input.value = saved;
     }
 
     function minimizeRadioModal() {
@@ -1521,42 +1524,87 @@
       }
     }
 
-    function applyRadioUrlFromInput() {
+    async function applyRadioUrlFromInput() {
       const input = document.getElementById('radioUrlInput');
       const rawUrl = input ? input.value.trim() : '';
       if (!rawUrl) {
         alert('Por favor, cole o link da sua playlist ou rádio do YouTube Music.');
         return;
       }
-      loadAndPlayRadio(rawUrl);
-    }
-
-    function loadAndPlayRadio(url) {
-      const embedUrl = parseYouTubeMusicUrl(url);
+      const embedUrl = parseYouTubeMusicUrl(rawUrl);
       if (!embedUrl) {
         alert('Não foi possível identificar a playlist deste link. Certifique-se de que é um link válido do YouTube Music.');
         return;
       }
 
+      loadAndPlayRadio(rawUrl);
+
+      // Sincroniza em tempo real para TODAS as instâncias conectadas via Firebase
+      try {
+        await fetch(`${FIREBASE_URL}/radioUrl.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(rawUrl)
+        });
+      } catch (err) {
+        console.error('Erro ao sincronizar rádio com o banco:', err);
+      }
+    }
+
+    function loadAndPlayRadio(url) {
+      if (!url) return;
+      const embedUrl = parseYouTubeMusicUrl(url);
+      if (!embedUrl) return;
+
+      currentActiveRadioUrl = url;
       saveRadioUrl(url);
+
       const input = document.getElementById('radioUrlInput');
-      if (input) input.value = url;
+      if (input && document.activeElement !== input) input.value = url;
 
       const iframe = document.getElementById('radioIframe');
       const placeholder = document.getElementById('radioPlaceholder');
+      const dock = document.getElementById('radioMiniDock');
+      const modal = document.getElementById('radioModal');
 
       if (iframe) {
-        iframe.src = embedUrl;
+        if (iframe.src !== embedUrl) {
+          iframe.src = embedUrl;
+        }
         iframe.style.display = 'block';
       }
       if (placeholder) {
         placeholder.style.display = 'none';
       }
+
+      if (dock && (!modal || !modal.classList.contains('active'))) {
+        dock.classList.add('active');
+      }
     }
 
     function loadDefaultRadio() {
-      loadAndPlayRadio(DEFAULT_RADIO_URL);
+      const input = document.getElementById('radioUrlInput');
+      if (input) input.value = DEFAULT_RADIO_URL;
+      applyRadioUrlFromInput();
     }
+
+    // Ouvinte em tempo real (SSE) para que todas as abas e OBS toquem juntos instantaneamente
+    function initRadioRealtimeSync() {
+      try {
+        const es = new EventSource(`${FIREBASE_URL}/radioUrl.json`);
+        es.addEventListener('put', (e) => {
+          try {
+            const res = JSON.parse(e.data);
+            const newUrl = res && res.data !== undefined ? res.data : res;
+            if (typeof newUrl === 'string' && newUrl && newUrl !== currentActiveRadioUrl) {
+              loadAndPlayRadio(newUrl);
+            }
+          } catch (err) {}
+        });
+      } catch (e) {}
+    }
+
+    initRadioRealtimeSync();
 
     function toggleObsModal() {
       const modal = document.getElementById('obsModal');
@@ -1956,6 +2004,9 @@
             manualChests: data.manualChests || {},
             players: Object.values(data.players || {})
           };
+          if (data.radioUrl && data.radioUrl !== currentActiveRadioUrl) {
+            loadAndPlayRadio(data.radioUrl);
+          }
           render();
         }
       } catch (e) {}
