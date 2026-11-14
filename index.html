@@ -1007,8 +1007,8 @@
         <div class="w-title">
           <span>🏴‍☠️ METAS DE TESOUROS</span>
         </div>
-        <button id="thBtn" class="th-toggle" onclick="toggleTreasureHour()" title="Horários automáticos: Sábados 16h–18h e 23h–01h (Clique para alternar Automático / Ligado / Desligado)">
-          🔥 HORA DO TESOURO: <span id="thStatusTxt">AUTO</span>
+        <button id="thBtn" class="th-toggle" onclick="toggleTreasureHour()" title="Horários da Hora Especial: Das 16h às 18h e das 23h à 1h da manhã (Clique para alternar Automático / Ligado / Desligado)">
+          🔥 HORA ESPECIAL: <span id="thStatusTxt">AUTO</span>
         </button>
       </div>
 
@@ -1249,25 +1249,28 @@
       {
         key: 'goldOutfit',
         icon: '👑',
-        name: 'Traje Dourado (Lil Uzi Vert)',
+        name: 'Skin Semanal de Ouro (Lil Uzi Vert)',
         baseDenom: 1562500,
-        thBoost: 10,
+        specialDenom: 208333,
+        thBoost: 7.5,
         canRepeat: false
       },
       {
         key: 'pirateShop',
         icon: '🏴‍☠️',
-        name: 'Loja Pirata',
+        name: 'Acesso à Loja Pirata',
         baseDenom: 137500,
-        thBoost: 2,
+        specialDenom: 91667,
+        thBoost: 1.5,
         canRepeat: false,
         isMainGoal: true
       },
       {
         key: 'vehicle',
         icon: '🚗',
-        name: 'Veículo (Cadillac CT5-V)',
+        name: 'Veículo Semanal (Cadillac CT5-V)',
         baseDenom: 7813,
+        specialDenom: 781,
         thBoost: 10,
         canRepeat: false
       },
@@ -1771,17 +1774,24 @@
         return !!autoDetected[key];
       };
 
+      const getDefEffDenom = (def) => {
+        if (isTH && def.specialDenom) return def.specialDenom;
+        if (isTH && def.thBoost > 1) return Math.round(def.baseDenom / def.thBoost);
+        return def.baseDenom;
+      };
+
       let removedProbSum = 0;
       for (const def of PRIZE_DEFS) {
         if (!def.canRepeat && isObtained(def.key)) {
-          const effDenom = isTH ? (def.baseDenom / def.thBoost) : def.baseDenom;
+          const effDenom = getDefEffDenom(def);
           removedProbSum += (1 / effDenom);
         }
       }
 
       const psDef = PRIZE_DEFS.find(d => d.key === 'pirateShop');
       const psObtained = isObtained('pirateShop');
-      const psBaseP = (isTH ? psDef.thBoost : 1) / psDef.baseDenom;
+      const psEffBaseDenom = getDefEffDenom(psDef);
+      const psBaseP = 1 / psEffBaseDenom;
       const psNextP = psObtained ? 1 : (psBaseP / Math.max(0.0001, 1 - removedProbSum));
       const psEffDenom = Math.round(1 / psNextP);
 
@@ -1808,9 +1818,11 @@
       if (!chkContainer) return;
       chkContainer.innerHTML = PRIZE_DEFS.map(def => {
         const done = isObtained(def.key);
-        const effDenom = Math.round(def.baseDenom / (isTH ? def.thBoost : 1));
+        const effDenom = getDefEffDenom(def);
         const pct = ((1 / effDenom) * 100);
-        const pctStr = pct < 0.01 ? pct.toFixed(5) : pct.toFixed(3);
+        const pctStr = pct < 0.01 ? pct.toFixed(6) : pct.toFixed(3);
+        const hasBoost = isTH && ((def.specialDenom && def.specialDenom < def.baseDenom) || (def.thBoost > 1));
+        const boostMultiplier = def.specialDenom ? (def.baseDenom / def.specialDenom).toFixed(1).replace('.0', '') : (def.thBoost || 1);
 
         if (def.canRepeat) {
           return `
@@ -1835,7 +1847,7 @@
             <div class="chk-name">
               <span>${def.icon}</span>
               <span class="n-txt">${def.name}</span>
-              ${isTH && def.thBoost > 1 ? `<span class="pill">BÔNUS ${def.thBoost}×</span>` : ''}
+              ${hasBoost ? `<span class="pill">BÔNUS ${boostMultiplier}×</span>` : ''}
               ${done ? '<span class="pill">OBTIDO</span>' : ''}
             </div>
             <div class="chk-odds">
@@ -2014,5 +2026,12 @@
 
     loadRanking();
     setInterval(loadRanking, 120000);
+    // Atualiza contagem regressiva da Hora Especial a cada 30 segundos
+    setInterval(() => {
+      if (currentState.players) {
+        const total = currentState.players.reduce((s, p) => s + (p.totalChests || 0), 0);
+        renderChecklist(currentState.players, total);
+      }
+    }, 30000);
   </script></body>
 </html>
