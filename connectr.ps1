@@ -101,11 +101,11 @@ function Classify-Prizes($treasuresList) {
         if (-not $raw) { continue }
         if ($raw -match 'loading screen|plunder in paradise|so kawaii|dpid_item2|dpid_item17') { $prizes.loadingScreen = $true }
         elseif ($raw -match 'music track|jam track|no trespassing|london|dpid_item4|dpid_item16') { $prizes.jamTrack = $true }
-        elseif ($raw -match 'pickaxe|gauntlet|dpid_item1') { $prizes.pickaxe = $true }
+        elseif ($raw -match 'pickaxe|back bling|diamond and gold|gauntlet|dpid_item1|dpid_item18') { $prizes.pickaxe = $true }
         elseif ($raw -match 'vehicle|mercedes|cadillac|dpid_item3|dpid_item15') { $prizes.vehicle = $true }
         elseif ($raw -match 'pirate shop|shop') { $prizes.pirateShop = $true }
         elseif ($raw -match 'gold outfit|outfit|skin|uzi') { $prizes.goldOutfit = $true }
-        else { $prizes.gizmosCount++ }
+        elseif ($raw -notmatch '^\d+$') { $prizes.gizmosCount++ }
     }
     return $prizes
 }
@@ -130,10 +130,12 @@ function Sync-ChestData {
         try { $overlayHtml = [System.IO.File]::ReadAllText($ovlFile, [System.Text.Encoding]::UTF8) } catch {}
     }
 
-    $csvLen = $csvContent.Length
-    $csvTail = if ($csvLen -gt 200) { $csvContent.Substring($csvLen - 200) } else { $csvContent }
-    $ovlHash = if ($overlayHtml) { $overlayHtml.GetHashCode() } else { 0 }
-    $currentHash = "${csvLen}_${csvTail}_${ovlHash}"
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $currentHash = [System.BitConverter]::ToString($sha.ComputeHash([System.Text.Encoding]::UTF8.GetBytes("$csvContent|$overlayHtml")))
+    } finally {
+        $sha.Dispose()
+    }
 
     if ($currentHash -eq $script:lastHash) {
         return # Nenhuma modificacao local em relacao a checagem anterior
@@ -142,24 +144,47 @@ function Sync-ChestData {
     $script:isSyncing = $true
     try {
         $lines = @($csvContent -split "`r?`n") | Where-Object { $_.Trim() -ne '' }
+        if ($lines.Count -lt 2) { return }
+
+        # Mapeia indices pelo cabecalho (suporta CSV antigo 9 cols e v1.5.1+ 10 cols com teammate_chests)
+        $colIdx = @{}
+        $headerCols = $lines[0].Split(';')
+        for ($c = 0; $c -lt $headerCols.Length; $c++) {
+            $k = $headerCols[$c].Trim().ToLower()
+            if ($k -and -not $colIdx.ContainsKey($k)) { $colIdx[$k] = $c }
+        }
+        $hasHeader = $colIdx.ContainsKey('player') -and $colIdx.ContainsKey('chests')
+        $iDate      = if ($hasHeader -and $colIdx.ContainsKey('date')) { $colIdx['date'] } else { 0 }
+        $iMode      = if ($hasHeader -and $colIdx.ContainsKey('mode')) { $colIdx['mode'] } else { 1 }
+        $iPlayer    = if ($hasHeader) { $colIdx['player'] } else { 2 }
+        $iPlacement = if ($hasHeader -and $colIdx.ContainsKey('placement')) { $colIdx['placement'] } else { 3 }
+        $iPlayers   = if ($hasHeader -and $colIdx.ContainsKey('players')) { $colIdx['players'] } else { 4 }
+        $iChests    = if ($hasHeader) { $colIdx['chests'] } else { 5 }
+        $iAmmo      = if ($hasHeader -and $colIdx.ContainsKey('ammo_boxes')) { $colIdx['ammo_boxes'] } else { 6 }
+        $iTreasures = if ($hasHeader -and $colIdx.ContainsKey('treasures')) { $colIdx['treasures'] } else { 7 }
+        $iFile      = if ($hasHeader -and $colIdx.ContainsKey('file')) { $colIdx['file'] } else { 8 }
+
         $playersMap = [System.Collections.Generic.Dictionary[string, object]]::new([System.StringComparer]::OrdinalIgnoreCase)
         $latestPlayerName = 'Jogador'
+        $csvAllPlayersChests = 0
+        $startIdx = if ($hasHeader) { 1 } else { 0 }
 
-        for ($i = 1; $i -lt $lines.Count; $i++) {
+        for ($i = $startIdx; $i -lt $lines.Count; $i++) {
             $parts = $lines[$i].Split(';')
-            if ($parts.Length -lt 6) { continue }
-            $date = $parts[0]
-            $mode = $parts[1]
-            $pName = $parts[2].Trim()
+            if ($parts.Length -le $iChests) { continue }
+            $date = if ($parts.Length -gt $iDate) { $parts[$iDate] } else { '' }
+            $mode = if ($parts.Length -gt $iMode) { $parts[$iMode] } else { '' }
+            $pName = $parts[$iPlayer].Trim()
             if (-not $pName) { $pName = 'Jogador' }
             $latestPlayerName = $pName
 
-            $placement = 0; [int]::TryParse($parts[3], [ref]$placement) | Out-Null
-            $totalPlayers = 0; [int]::TryParse($parts[4], [ref]$totalPlayers) | Out-Null
-            $chests = 0; [int]::TryParse($parts[5], [ref]$chests) | Out-Null
-            $ammo = 0; if ($parts.Length -gt 6) { [int]::TryParse($parts[6], [ref]$ammo) | Out-Null }
-            $treasures = if ($parts.Length -gt 7) { $parts[7] } else { '' }
-            $replayFile = if ($parts.Length -gt 8) { $parts[8] } else { '' }
+            $placement = 0; if ($parts.Length -gt $iPlacement) { [int]::TryParse($parts[$iPlacement], [ref]$placement) | Out-Null }
+            $totalPlayers = 0; if ($parts.Length -gt $iPlayers) { [int]::TryParse($parts[$iPlayers], [ref]$totalPlayers) | Out-Null }
+            $chests = 0; [int]::TryParse($parts[$iChests], [ref]$chests) | Out-Null
+            $ammo = 0; if ($parts.Length -gt $iAmmo) { [int]::TryParse($parts[$iAmmo], [ref]$ammo) | Out-Null }
+            $treasures = if ($parts.Length -gt $iTreasures) { $parts[$iTreasures] } else { '' }
+            $replayFile = if ($parts.Length -gt $iFile) { $parts[$iFile] } else { '' }
+            $csvAllPlayersChests += $chests
 
             if (-not $playersMap.ContainsKey($pName)) {
                 $playersMap[$pName] = @{
@@ -187,16 +212,20 @@ function Sync-ChestData {
         $sessionText = ''
         $overlayTotal = $null
         if ($overlayHtml) {
-            if ($overlayHtml -match 'MATCH IN PROGRESS') { $inProgress = $true }
-            if ($overlayHtml -match 'class="big total">([0-9.,]+)<') {
+            if ($overlayHtml -match 'MATCH IN PROGRESS|class="total[^"]*\blive\b|class="dot"') { $inProgress = $true }
+            if ($overlayHtml -match 'class="(?:big )?total[^"]*">(?:<[^>]+>)*\s*([0-9.,]+)\s*<') {
                 $overlayTotal = [int]($Matches[1] -replace '[,.]', '')
             }
-            if ($overlayHtml -match '<span>Session</span><b>([^<]+)<small>([^<]+)</small></b>') {
-                $sessionText = "$($Matches[1].Trim()) ($($Matches[2].Replace('&#183;', '·').Trim()))"
+            if ($overlayHtml -match '<span>Session</span>(?:(?!</?b\b).)*?<b>([^<]+)(?:<small>([^<]+)</small>)?</b>') {
+                $sesVal = $Matches[1].Trim()
+                $sesSub = if ($Matches[2]) { " ($($Matches[2].Replace('&#183;', '·').Trim()))" } else { '' }
+                $sessionText = "$sesVal$sesSub"
             }
         }
+        $liveDelta = if ($inProgress -and $overlayTotal -and $overlayTotal -gt $csvAllPlayersChests) { $overlayTotal - $csvAllPlayersChests } else { 0 }
 
         $todayPrefix = (Get-Date).ToString('yyyy-MM-dd')
+        $allSentOk = ($playersMap.Count -gt 0)
 
         # Itera por CADA jogador encontrado isoladamente (filtragem estrita por nick)
         foreach ($entry in $playersMap.Values) {
@@ -221,18 +250,18 @@ function Sync-ChestData {
                 if ($m.date.StartsWith($todayPrefix)) { $todayChests += $m.chests }
 
                 if ($m.treasures -and $m.treasures.Trim()) {
-                    foreach ($t in ($m.treasures -split ',')) {
+                    foreach ($t in ($m.treasures -split ',|\s\+\s')) {
                         $item = $t.Trim()
                         if ($item) { $treasuresList.Add([PSCustomObject]@{ date = $m.date; item = $item }) | Out-Null }
                     }
                 }
             }
 
-            # Overlay ao vivo (inProgress e sessionText) so se aplica ao jogador ativo mais recente na maquina
+            # Overlay ao vivo (inProgress, liveDelta e sessionText) so se aplica ao jogador ativo mais recente na maquina
             $isThisActive = ($player.ToLower() -eq $latestPlayerName.ToLower())
             $playerInProgress = if ($isThisActive) { $inProgress } else { $false }
             $playerSession = if ($isThisActive) { $sessionText } else { '' }
-            $finalChests = if ($isThisActive -and $overlayTotal -and $overlayTotal -gt $totalChests) { $overlayTotal } else { $totalChests }
+            $finalChests = if ($isThisActive) { $totalChests + $liveDelta } else { $totalChests }
 
             $matchesCount = $matchList.Count
             $avgChests = if ($matchesCount -gt 0) { [math]::Round($finalChests / $matchesCount, 1) } else { 0 }
@@ -243,8 +272,8 @@ function Sync-ChestData {
             }
 
             $prizes = Classify-Prizes $treasuresList
-            $recent = if ($matchList.Count -gt 15) { @($matchList[($matchList.Count - 15)..($matchList.Count - 1)]) } else { $matchList.ToArray() }
-            [array]::Reverse($recent)
+            [object[]]$recent = if ($matchList.Count -gt 15) { @($matchList[($matchList.Count - 15)..($matchList.Count - 1)]) } else { @($matchList.ToArray()) }
+            if ($recent.Length -gt 1) { [array]::Reverse($recent) }
             $lastMatch = if ($matchList.Count -gt 0) { $matchList[$matchList.Count - 1] } else { $null }
 
             $summary = [PSCustomObject]@{
@@ -278,19 +307,22 @@ function Sync-ChestData {
             # Envia para o Firebase Realtime Database
             try {
                 $bytes = [System.Text.Encoding]::UTF8.GetBytes($summaryJson)
-                Invoke-RestMethod -Uri "https://fortnite-ranking-ac8c4-default-rtdb.firebaseio.com/players/$playerId.json" -Method Put -Body $bytes -ContentType 'application/json; charset=utf-8' -TimeoutSec 5 | Out-Null
+                Invoke-RestMethod -Uri "https://fortnite-ranking-ac8c4-default-rtdb.firebaseio.com/players/$playerId.json" -Method Put -Body $bytes -ContentType 'application/json; charset=utf-8' -TimeoutSec 15 | Out-Null
             } catch {
+                $allSentOk = $false
                 Write-Host "[!] Erro ao enviar para o Firebase ($player): $($_.Exception.Message)" -ForegroundColor Yellow
             }
         }
 
-        # Atualiza carimbo global de atualizacao
-        try {
-            $nowIso = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
-            $nowBytes = [System.Text.Encoding]::UTF8.GetBytes('"' + $nowIso + '"')
-            Invoke-RestMethod -Uri "https://fortnite-ranking-ac8c4-default-rtdb.firebaseio.com/updatedAt.json" -Method Put -Body $nowBytes -ContentType 'application/json; charset=utf-8' -TimeoutSec 5 | Out-Null
-            $script:lastHash = $currentHash # so marca como enviado se o Firebase aceitou com sucesso
-        } catch {}
+        # Marca como enviado se todos os jogadores foram aceitos e atualiza carimbo global
+        if ($allSentOk) {
+            $script:lastHash = $currentHash
+            try {
+                $nowIso = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+                $nowBytes = [System.Text.Encoding]::UTF8.GetBytes('"' + $nowIso + '"')
+                Invoke-RestMethod -Uri "https://fortnite-ranking-ac8c4-default-rtdb.firebaseio.com/updatedAt.json" -Method Put -Body $nowBytes -ContentType 'application/json; charset=utf-8' -TimeoutSec 15 | Out-Null
+            } catch {}
+        }
     } catch {
         Write-Host "[!] Erro: $($_.Exception.Message) na linha $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Red
     } finally {
