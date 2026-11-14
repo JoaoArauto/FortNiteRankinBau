@@ -47,24 +47,37 @@
       display: none !important;
     }
 
-    body.compact-mode .widgets-grid { padding: 6px; }
-    body.compact-mode .widget-wrap { max-width: 360px; padding: 8px 10px; }
+    body.compact-mode .widgets-grid {
+      justify-content: flex-start;
+      width: fit-content;
+      max-width: none;
+      margin: 0;
+      padding: 2px;
+    }
+    body.compact-mode .widget-wrap {
+      width: max-content;
+      max-width: none;
+      padding: 5px 6px;
+      clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+    }
     body.compact-mode .w-header,
     body.compact-mode .w-bar,
     body.compact-mode .footer-bar,
     body.compact-mode .badge-live,
     body.compact-mode .drawer { display: none; }
-    body.compact-mode .list { gap: 5px; }
+    body.compact-mode .list { gap: 3px; }
     body.compact-mode .row {
-      padding: 6px 10px;
-      gap: 8px;
-      grid-template-columns: 26px 1fr auto;
+      padding: 4px 8px;
+      gap: 6px;
+      grid-template-columns: 20px 1fr auto;
       cursor: default;
     }
-    body.compact-mode .pos { width: 24px; height: 24px; font-size: 13px; }
-    body.compact-mode .p-name { font-size: 16px; }
-    body.compact-mode .p-sub { font-size: 12px; }
-    body.compact-mode .p-score .main-val { font-size: 20px; }
+    body.compact-mode .pos { width: 20px; height: 20px; font-size: 11px; }
+    body.compact-mode .p-info { min-width: max-content; gap: 0; }
+    body.compact-mode .p-name { font-size: 14px; line-height: 1.05; overflow: visible; text-overflow: clip; }
+    body.compact-mode .p-sub { font-size: 10.5px; line-height: 1.05; overflow: visible; }
+    body.compact-mode .p-score .main-val { font-size: 17px; }
+    body.compact-mode .p-score .sub-lbl { font-size: 9px; }
 
     .widgets-grid {
       display: flex;
@@ -1104,7 +1117,7 @@
       <div class="obs-link-row">
         <div class="ol-info">
           <span class="ol-title">📌 RANKING COMPACTO (MINI)</span>
-          <span class="ol-desc">Posição, nome, baús abertos e última partida · Tam: 380 × 300</span>
+          <span class="ol-desc">Posição, nome, baús abertos e última partida · Tam. auto (ex: 320 × 240)</span>
         </div>
         <button class="ol-copy-bar" onclick="copyObsUrl('&widget=compact', this)" title="Clique para copiar"><span class="ol-copy-label">?obs=1&widget=compact</span><span class="clip-icon">📋</span></button>
       </div>
@@ -1975,7 +1988,7 @@
         const lastVal = p.lastMatch && p.lastMatch.chests != null ? p.lastMatch.chests : null;
         const lastChests = lastVal !== null ? `ÚLT: <b>${lastVal}</b>` : '';
         const subHtml = isCompact
-          ? `<span>ÚLT. PARTIDA: <b>${lastVal !== null ? lastVal : 0}</b></span>`
+          ? `<span>ÚLT: <b>${lastVal !== null ? lastVal : 0}</b></span>`
           : `<span>HOJE: <b>${p.todayChests || 0}</b></span>
              <span>·</span>
              <span>REC: <b>${p.bestMatch || 0}</b></span>
