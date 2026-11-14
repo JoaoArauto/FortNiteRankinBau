@@ -997,7 +997,7 @@
       </div>
 
       <div class="footer-bar hide-obs">
-        <span id="statusFooter">AO VIVO</span>
+        <span id="statusFooter" onclick="triggerManualRefresh()" style="cursor:pointer;" title="Clique para recarregar agora">AO VIVO</span>
       </div>
     </div>
 
@@ -1927,11 +1927,7 @@
         console.error('Erro ao renderizar checklist:', err);
       }
 
-      const footerEl = document.getElementById('statusFooter');
-      if (footerEl && currentState.updatedAt) {
-        const dt = new Date(currentState.updatedAt);
-        footerEl.textContent = `${players.length} JOGADOR(ES) · ATUALIZADO ÀS ${dt.toLocaleTimeString('pt-BR')}`;
-      }
+      updateFooterTimer();
 
       const container = document.getElementById('rankingContainer');
       if (players.length === 0) {
@@ -2019,13 +2015,45 @@
           if (data.radioUrl && data.radioUrl !== currentActiveRadioUrl) {
             loadAndPlayRadio(data.radioUrl);
           }
+          refreshCountdown = 120;
           render();
         }
       } catch (e) {}
     }
 
+    let refreshCountdown = 120; // Recarrega a cada 2 minutos (120s)
+
+    function updateFooterTimer() {
+      const footerEl = document.getElementById('statusFooter');
+      if (!footerEl) return;
+      const count = (currentState.players || []).length;
+      const mins = Math.floor(refreshCountdown / 60);
+      const secs = refreshCountdown % 60;
+      const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      footerEl.innerHTML = `${count} JOGADOR(ES) · RECARREGA EM <b>${timeStr}</b>`;
+    }
+
+    function triggerManualRefresh() {
+      refreshCountdown = 120;
+      const footerEl = document.getElementById('statusFooter');
+      if (footerEl) {
+        const count = (currentState.players || []).length;
+        footerEl.innerHTML = `${count} JOGADOR(ES) · <b>RECARREGANDO...</b>`;
+      }
+      loadRanking();
+    }
+
     loadRanking();
-    setInterval(loadRanking, 120000);
+
+    // Timer de contagem regressiva de segundo em segundo
+    setInterval(() => {
+      refreshCountdown--;
+      if (refreshCountdown <= 0) {
+        triggerManualRefresh();
+      } else {
+        updateFooterTimer();
+      }
+    }, 1000);
     // Atualiza contagem regressiva da Hora do Tesouro a cada 30 segundos
     setInterval(() => {
       if (currentState.players) {
