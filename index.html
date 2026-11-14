@@ -1007,8 +1007,8 @@
         <div class="w-title">
           <span>🏴‍☠️ METAS DE TESOUROS</span>
         </div>
-        <button id="thBtn" class="th-toggle" onclick="toggleTreasureHour()" title="Horários da Hora Especial: Das 16h às 18h e das 23h à 1h da manhã (Clique para alternar Automático / Ligado / Desligado)">
-          🔥 HORA ESPECIAL: <span id="thStatusTxt">AUTO</span>
+        <button id="thBtn" class="th-toggle" onclick="toggleTreasureHour()" title="Horários da Hora do Tesouro: Das 16h às 18h e das 23h à 1h da manhã (Clique para alternar Automático / Ligado / Desligado)">
+          🔥 HORA DO TESOURO: <span id="thStatusTxt">AUTO</span>
         </button>
       </div>
 
@@ -2026,7 +2026,7 @@
 
     loadRanking();
     setInterval(loadRanking, 120000);
-    // Atualiza contagem regressiva da Hora Especial a cada 30 segundos
+    // Atualiza contagem regressiva da Hora do Tesouro a cada 30 segundos
     setInterval(() => {
       if (currentState.players) {
         const total = currentState.players.reduce((s, p) => s + (p.totalChests || 0), 0);
