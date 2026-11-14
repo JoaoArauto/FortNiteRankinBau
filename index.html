@@ -47,6 +47,25 @@
       display: none !important;
     }
 
+    body.compact-mode .widgets-grid { padding: 6px; }
+    body.compact-mode .widget-wrap { max-width: 360px; padding: 8px 10px; }
+    body.compact-mode .w-header,
+    body.compact-mode .w-bar,
+    body.compact-mode .footer-bar,
+    body.compact-mode .badge-live,
+    body.compact-mode .drawer { display: none; }
+    body.compact-mode .list { gap: 5px; }
+    body.compact-mode .row {
+      padding: 6px 10px;
+      gap: 8px;
+      grid-template-columns: 26px 1fr auto;
+      cursor: default;
+    }
+    body.compact-mode .pos { width: 24px; height: 24px; font-size: 13px; }
+    body.compact-mode .p-name { font-size: 16px; }
+    body.compact-mode .p-sub { font-size: 12px; }
+    body.compact-mode .p-score .main-val { font-size: 20px; }
+
     .widgets-grid {
       display: flex;
       flex-wrap: wrap;
@@ -1084,6 +1103,14 @@
 
       <div class="obs-link-row">
         <div class="ol-info">
+          <span class="ol-title">📌 RANKING COMPACTO (MINI)</span>
+          <span class="ol-desc">Posição, nome, baús abertos e última partida · Tam: 380 × 300</span>
+        </div>
+        <button class="ol-copy-bar" onclick="copyObsUrl('&widget=compact', this)" title="Clique para copiar"><span class="ol-copy-label">?obs=1&widget=compact</span><span class="clip-icon">📋</span></button>
+      </div>
+
+      <div class="obs-link-row">
+        <div class="ol-info">
           <span class="ol-title">📻 RÁDIO / PLAYER DE MÚSICA</span>
           <span class="ol-desc">Player de áudio em segundo plano · Tam: 480 × 280</span>
         </div>
@@ -1330,6 +1357,9 @@
       });
     } else if (params.get('widget') === 'ranking') {
       document.getElementById('widgetChecklist').style.display = 'none';
+    } else if (params.get('widget') === 'compact') {
+      document.getElementById('widgetChecklist').style.display = 'none';
+      document.body.classList.add('compact-mode');
     } else if (params.get('widget') === 'checklist') {
       document.getElementById('widgetRanking').style.display = 'none';
     }
@@ -1911,7 +1941,9 @@
         }
       }
 
-      players.sort((a, b) => (b[currentSort] || 0) - (a[currentSort] || 0));
+      const isCompact = document.body.classList.contains('compact-mode');
+      const sortKey = isCompact ? 'totalChests' : currentSort;
+      players.sort((a, b) => (b[sortKey] || 0) - (a[sortKey] || 0));
 
       const totalChests = players.reduce((s, p) => s + (p.totalChests || 0), 0) + globalManual;
       const bestMatch = players.reduce((m, p) => Math.max(m, p.bestMatch || 0), 0);
@@ -1939,33 +1971,35 @@
         const rank = idx + 1;
         const rankClass = rank <= 3 ? `rank-${rank}` : '';
         const isOpen = openDetailsIds.has(p.id);
-        const mainMetric = p[currentSort] !== undefined ? p[currentSort] : p.totalChests;
-        const lastChests = p.lastMatch ? `ÚLT: <b>${p.lastMatch.chests}</b>` : '';
+        const mainMetric = isCompact ? p.totalChests : (p[currentSort] !== undefined ? p[currentSort] : p.totalChests);
+        const lastVal = p.lastMatch && p.lastMatch.chests != null ? p.lastMatch.chests : null;
+        const lastChests = lastVal !== null ? `ÚLT: <b>${lastVal}</b>` : '';
+        const subHtml = isCompact
+          ? `<span>ÚLT. PARTIDA: <b>${lastVal !== null ? lastVal : 0}</b></span>`
+          : `<span>HOJE: <b>${p.todayChests || 0}</b></span>
+             <span>·</span>
+             <span>REC: <b>${p.bestMatch || 0}</b></span>
+             <span>·</span>
+             <span>MÉD: <b>${p.avgChests || 0}</b></span>
+             ${p.manualBonus ? `<span>· MANUAL: <b>+${p.manualBonus}</b></span>` : ''}
+             ${lastChests ? `<span>· ${lastChests}</span>` : ''}
+             ${p.wins ? `<span>· 👑 <b>${p.wins}</b></span>` : ''}
+             ${p.treasuresCount ? `<span>· ★ <b>${p.treasuresCount}</b></span>` : ''}`;
 
         return `
           <div>
-            <div class="row ${rankClass}" onclick="toggleDetails('${p.id}')">
+            <div class="row ${rankClass}" ${isCompact ? '' : `onclick="toggleDetails('${p.id}')"`}>
               <div class="pos">${rank}º</div>
               <div class="p-info">
                 <div class="p-top">
                   <span class="p-name">${escapeHtml(p.player)}</span>
                   ${p.inProgress ? '<span class="badge-live">● EM PARTIDA</span>' : ''}
                 </div>
-                <div class="p-sub">
-                  <span>HOJE: <b>${p.todayChests || 0}</b></span>
-                  <span>·</span>
-                  <span>REC: <b>${p.bestMatch || 0}</b></span>
-                  <span>·</span>
-                  <span>MÉD: <b>${p.avgChests || 0}</b></span>
-                  ${p.manualBonus ? `<span>· MANUAL: <b>+${p.manualBonus}</b></span>` : ''}
-                  ${lastChests ? `<span>· ${lastChests}</span>` : ''}
-                  ${p.wins ? `<span>· 👑 <b>${p.wins}</b></span>` : ''}
-                  ${p.treasuresCount ? `<span>· ★ <b>${p.treasuresCount}</b></span>` : ''}
-                </div>
+                <div class="p-sub">${subHtml}</div>
               </div>
               <div class="p-score">
                 <span class="main-val">${Number(mainMetric || 0).toLocaleString('pt-BR')}</span>
-                <span class="sub-lbl">${sortLabels[currentSort] || 'BAÚS'}</span>
+                <span class="sub-lbl">${isCompact ? 'BAÚS' : (sortLabels[currentSort] || 'BAÚS')}</span>
               </div>
             </div>
 
