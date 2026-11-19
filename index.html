@@ -6,20 +6,20 @@
   <title>Ranking de Baús & Loja Pirata</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      /* Tema HUD Fortnite Sóbrio (Escuro translúcido + Branco/Cinza + Detalhe Ciano/Ouro discreto) */
-      --hud-bg: rgba(12, 15, 22, 0.90);
-      --hud-row: rgba(20, 25, 36, 0.88);
-      --hud-row-hover: rgba(28, 35, 50, 0.95);
-      --hud-border: rgba(255, 255, 255, 0.12);
-      --hud-accent: #e2e8f0;
-      --hud-highlight: #facc15;
-      --hud-cyan: #38bdf8;
-      --hud-green: #4ade80;
-      --text: #f8fafc;
-      --muted: #94a3b8;
+      /* Grafite escuro fosco + dourado seco */
+      --hud-bg: rgba(23, 24, 27, 0.94);
+      --hud-row: rgba(30, 32, 37, 0.94);
+      --hud-row-hover: rgba(40, 43, 50, 0.98);
+      --hud-border: rgba(244, 244, 245, 0.09);
+      --hud-accent: #e4e5e9;
+      --hud-highlight: #d4a843;
+      --hud-cyan: #7aa2b8;
+      --hud-green: #5cb874;
+      --text: #f1f2f4;
+      --muted: #9699a2;
     }
 
     * {
@@ -29,13 +29,12 @@
     }
 
     html, body {
-      background: #090b10;
+      background: #111214;
       color: var(--text);
       font-family: "Barlow Condensed", "Segoe UI", system-ui, sans-serif;
       font-size: 15px;
       line-height: 1.25;
       user-select: none;
-      letter-spacing: 0.02em;
     }
 
     body.obs-mode,
@@ -52,12 +51,12 @@
       width: fit-content;
       max-width: none;
       margin: 0;
-      padding: 2px;
+      padding: 4px;
     }
     body.compact-mode .widget-wrap {
       width: max-content;
       max-width: none;
-      padding: 5px 6px;
+      padding: 6px 8px;
       clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
     }
     body.compact-mode .w-header,
@@ -65,7 +64,7 @@
     body.compact-mode .footer-bar,
     body.compact-mode .badge-live,
     body.compact-mode .drawer { display: none; }
-    body.compact-mode .list { gap: 3px; }
+    body.compact-mode .list { gap: 4px; }
     body.compact-mode .row {
       padding: 4px 8px;
       gap: 6px;
@@ -75,41 +74,40 @@
     body.compact-mode .pos { width: 20px; height: 20px; font-size: 11px; }
     body.compact-mode .p-info { min-width: max-content; gap: 0; }
     body.compact-mode .p-name { font-size: 14px; line-height: 1.05; overflow: visible; text-overflow: clip; }
-    body.compact-mode .p-sub { font-size: 10.5px; line-height: 1.05; overflow: visible; }
+    body.compact-mode .p-sub { font-size: 11px; line-height: 1.05; overflow: visible; }
     body.compact-mode .p-score .main-val { font-size: 17px; }
-    body.compact-mode .p-score .sub-lbl { font-size: 9px; }
+    body.compact-mode .p-score .sub-lbl { font-size: 10px; }
 
     .widgets-grid {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       align-items: flex-start;
-      gap: 14px;
-      padding: 14px;
+      gap: 16px;
+      padding: 16px;
       max-width: 1140px;
       margin: 0 auto;
     }
 
-    /* Painel estilo HUD in-game discreto (canto chanfrado, fundo escuro fosco) */
+    /* Painel grafite fosco */
     .widget-wrap {
       width: 100%;
       max-width: 530px;
       background: var(--hud-bg);
       border: 1px solid var(--hud-border);
-      border-top: 2px solid rgba(255, 255, 255, 0.28);
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65);
+      border-top: 2px solid var(--hud-highlight);
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
       clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
-      padding: 13px 15px;
-      backdrop-filter: blur(10px);
+      padding: 16px;
     }
 
-    /* Cabeçalho limpo */
+    /* Cabeçalho */
     .w-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      padding-bottom: 9px;
+      padding-bottom: 12px;
       border-bottom: 1px solid var(--hud-border);
     }
 
@@ -118,46 +116,32 @@
       align-items: center;
       gap: 8px;
       font-size: 18px;
-      font-weight: 900;
-      font-style: italic;
-      letter-spacing: 0.04em;
+      font-weight: 600;
       text-transform: uppercase;
       color: var(--text);
-      text-shadow: 0 2px 0 rgba(0, 0, 0, 0.8);
     }
 
-    .live-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--hud-green);
-      display: inline-block;
-    }
-
-    /* Contadores superiores estilo HUD de materiais */
     .w-stats-inline {
       display: flex;
       align-items: center;
       gap: 6px;
       font-size: 14px;
-      font-weight: 700;
-      text-transform: uppercase;
+      font-weight: 500;
       color: var(--muted);
     }
 
     .hud-chip {
-      background: rgba(0, 0, 0, 0.45);
+      background: rgba(0, 0, 0, 0.28);
       border: 1px solid var(--hud-border);
-      padding: 3px 8px;
-      transform: skewX(-8deg);
+      padding: 4px 8px;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
     }
 
     .hud-chip b {
       color: var(--text);
-      font-weight: 800;
+      font-weight: 600;
       font-size: 15px;
     }
 
@@ -166,8 +150,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 6px;
-      margin: 10px 0;
+      gap: 8px;
+      margin: 12px 0;
     }
 
     .tabs {
@@ -176,64 +160,60 @@
     }
 
     .tab {
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--hud-border);
       color: var(--muted);
       font-family: "Barlow Condensed", sans-serif;
-      font-size: 13.5px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      font-size: 14px;
+      font-weight: 600;
       padding: 4px 10px;
-      transform: skewX(-8deg);
       cursor: pointer;
-      transition: all 0.12s;
+      transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1), border-color 150ms cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .tab:hover {
       color: var(--text);
-      background: rgba(255, 255, 255, 0.09);
+      background: rgba(255, 255, 255, 0.08);
     }
 
     .tab.active {
-      background: var(--text);
-      border-color: var(--text);
-      color: #090b10;
-      font-weight: 900;
+      background: var(--hud-highlight);
+      border-color: var(--hud-highlight);
+      color: #111214;
+      font-weight: 600;
     }
 
     .mini-actions {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
     }
 
     .icon-btn {
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--hud-border);
       color: var(--text);
       font-family: "Barlow Condensed", sans-serif;
       font-size: 13px;
-      font-weight: 800;
-      text-transform: uppercase;
-      padding: 4px 9px;
-      transform: skewX(-8deg);
+      font-weight: 600;
+      padding: 4px 10px;
       cursor: pointer;
       text-decoration: none;
-      transition: all 0.12s;
+      transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1), border-color 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .icon-btn:hover {
-      background: rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(244, 244, 245, 0.25);
     }
 
     .icon-btn.primary {
-      background: rgba(250, 204, 21, 0.15);
+      background: rgba(212, 168, 67, 0.14);
       color: var(--hud-highlight);
-      border-color: rgba(250, 204, 21, 0.4);
+      border-color: rgba(212, 168, 67, 0.4);
     }
 
     /* Lista de Jogadores */
@@ -246,15 +226,14 @@
     .row {
       background: var(--hud-row);
       border: 1px solid var(--hud-border);
-      border-left: 4px solid rgba(255, 255, 255, 0.25);
+      border-left: 4px solid rgba(244, 244, 245, 0.2);
       padding: 8px 12px;
       display: grid;
       grid-template-columns: 30px 1fr auto;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       cursor: pointer;
-      transform: skewX(-4deg);
-      transition: all 0.12s;
+      transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .row:hover {
@@ -263,15 +242,15 @@
 
     .row.rank-1 {
       border-left-color: var(--hud-highlight);
-      background: linear-gradient(90deg, rgba(250, 204, 21, 0.10) 0%, var(--hud-row) 55%);
+      background: var(--hud-row);
     }
 
     .row.rank-2 {
-      border-left-color: #cbd5e1;
+      border-left-color: #a1a6b0;
     }
 
     .row.rank-3 {
-      border-left-color: #b45309;
+      border-left-color: #9b6b43;
     }
 
     .pos {
@@ -281,15 +260,15 @@
       align-items: center;
       justify-content: center;
       font-size: 15px;
-      font-weight: 900;
-      background: rgba(0, 0, 0, 0.4);
+      font-weight: 600;
+      background: rgba(0, 0, 0, 0.32);
       color: var(--muted);
       border: 1px solid var(--hud-border);
     }
 
     .rank-1 .pos {
       background: var(--hud-highlight);
-      color: #090b10;
+      color: #111214;
       border-color: var(--hud-highlight);
     }
 
@@ -308,9 +287,7 @@
 
     .p-name {
       font-size: 18px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
+      font-weight: 600;
       color: var(--text);
       white-space: nowrap;
       overflow: hidden;
@@ -319,21 +296,21 @@
 
     .badge-live {
       font-size: 11px;
-      font-weight: 800;
-      padding: 1px 6px;
-      background: rgba(74, 222, 128, 0.15);
+      font-weight: 600;
+      padding: 2px 6px;
+      background: rgba(92, 184, 116, 0.14);
       color: var(--hud-green);
-      border: 1px solid rgba(74, 222, 128, 0.35);
+      border: 1px solid rgba(92, 184, 116, 0.32);
       text-transform: uppercase;
     }
 
     .p-sub {
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 500;
       color: var(--muted);
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 6px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -341,7 +318,7 @@
 
     .p-sub b {
       color: var(--text);
-      font-weight: 800;
+      font-weight: 600;
     }
 
     .p-score {
@@ -353,7 +330,7 @@
 
     .p-score .main-val {
       font-size: 24px;
-      font-weight: 900;
+      font-weight: 600;
       color: var(--text);
       line-height: 1;
     }
@@ -364,19 +341,18 @@
 
     .p-score .sub-lbl {
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 500;
       color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
     }
 
     /* Gaveta de últimas partidas */
     .drawer {
       display: none;
-      background: rgba(8, 10, 15, 0.95);
+      background: #141518;
       border: 1px solid var(--hud-border);
       border-top: none;
-      margin: -2px 4px 4px 4px;
+      margin: 0 4px 4px 4px;
       padding: 8px 12px;
       font-size: 13px;
     }
@@ -389,11 +365,11 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 5px;
+      margin-bottom: 6px;
       color: var(--muted);
       font-size: 12px;
       text-transform: uppercase;
-      font-weight: 800;
+      font-weight: 600;
     }
 
     .mini-table {
@@ -402,10 +378,10 @@
     }
 
     .mini-table td {
-      padding: 3.5px 4px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 4px;
+      border-bottom: 1px solid rgba(244, 244, 245, 0.06);
       color: var(--muted);
-      font-weight: 600;
+      font-weight: 500;
     }
 
     .mini-table tr:last-child td {
@@ -415,7 +391,7 @@
     .mini-table td.c-chests {
       text-align: right;
       color: var(--text);
-      font-weight: 800;
+      font-weight: 600;
     }
 
     .empty {
@@ -423,20 +399,19 @@
       padding: 20px 12px;
       color: var(--muted);
       font-size: 14px;
-      font-weight: 700;
+      font-weight: 600;
     }
 
     .footer-bar {
-      margin-top: 9px;
-      padding-top: 7px;
+      margin-top: 8px;
+      padding-top: 8px;
       border-top: 1px solid var(--hud-border);
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 500;
       color: var(--muted);
-      text-transform: uppercase;
     }
 
     /* ==========================================
@@ -445,33 +420,32 @@
     .th-toggle {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       padding: 4px 10px;
-      transform: skewX(-8deg);
       font-family: "Barlow Condensed", sans-serif;
       font-size: 13px;
-      font-weight: 800;
+      font-weight: 600;
       text-transform: uppercase;
       cursor: pointer;
       border: 1px solid var(--hud-border);
-      background: rgba(0, 0, 0, 0.45);
+      background: rgba(0, 0, 0, 0.3);
       color: var(--muted);
+      transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1), border-color 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .th-toggle.active {
-      background: rgba(250, 204, 21, 0.16);
+      background: rgba(212, 168, 67, 0.14);
       color: var(--hud-highlight);
-      border-color: rgba(250, 204, 21, 0.45);
+      border-color: rgba(212, 168, 67, 0.45);
     }
 
     /* Card Missão Principal: Loja Pirata */
     .pirate-goal-card {
-      margin-top: 10px;
+      margin-top: 12px;
       background: var(--hud-row);
-      border: 1px solid rgba(255, 255, 255, 0.18);
+      border: 1px solid var(--hud-border);
       border-left: 4px solid var(--hud-highlight);
-      padding: 10px 12px;
-      transform: skewX(-3deg);
+      padding: 12px;
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -489,27 +463,18 @@
       align-items: center;
       gap: 8px;
       font-size: 17px;
-      font-weight: 900;
+      font-weight: 600;
       text-transform: uppercase;
       color: var(--text);
-    }
-
-    .pg-tag {
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      padding: 2px 6px;
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--hud-highlight);
     }
 
     .pg-metrics {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
-      background: rgba(0, 0, 0, 0.38);
+      background: rgba(0, 0, 0, 0.25);
       border: 1px solid var(--hud-border);
-      padding: 7px 10px;
+      padding: 8px 12px;
     }
 
     .pg-m {
@@ -519,7 +484,7 @@
 
     .pg-m .val {
       font-size: 19px;
-      font-weight: 900;
+      font-weight: 600;
       color: var(--text);
     }
 
@@ -530,30 +495,29 @@
     .pg-m .lbl {
       font-size: 12px;
       color: var(--muted);
-      font-weight: 700;
+      font-weight: 500;
       text-transform: uppercase;
     }
 
-    /* Lista de Prêmios sóbria */
+    /* Lista de Prêmios */
     .checklist {
-      margin-top: 9px;
+      margin-top: 12px;
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 4px;
     }
 
     .chk-row {
       background: var(--hud-row);
       border: 1px solid var(--hud-border);
-      border-left: 3px solid rgba(255, 255, 255, 0.25);
-      padding: 6.5px 10px;
+      border-left: 3px solid rgba(244, 244, 245, 0.2);
+      padding: 8px 10px;
       display: grid;
-      grid-template-columns: 22px 1fr auto;
+      grid-template-columns: 20px 1fr auto;
       align-items: center;
-      gap: 9px;
+      gap: 8px;
       cursor: pointer;
-      transform: skewX(-3deg);
-      transition: all 0.12s;
+      transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .chk-row:hover {
@@ -566,31 +530,30 @@
     }
 
     .chk-box {
-      width: 19px;
-      height: 19px;
-      background: rgba(0, 0, 0, 0.45);
-      border: 1.5px solid var(--muted);
+      width: 18px;
+      height: 18px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--muted);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 13px;
-      font-weight: 900;
+      font-size: 12px;
+      font-weight: 600;
       color: transparent;
     }
 
     .chk-row.done .chk-box {
       background: var(--hud-green);
       border-color: var(--hud-green);
-      color: #090b10;
+      color: #111214;
     }
 
     .chk-name {
       display: flex;
       align-items: center;
-      gap: 7px;
-      font-weight: 800;
+      gap: 8px;
+      font-weight: 600;
       font-size: 15px;
-      text-transform: uppercase;
       color: var(--text);
     }
 
@@ -601,9 +564,9 @@
 
     .pill {
       font-size: 11px;
-      font-weight: 800;
-      padding: 1px 6px;
-      background: rgba(255, 255, 255, 0.08);
+      font-weight: 600;
+      padding: 2px 6px;
+      background: rgba(255, 255, 255, 0.06);
       color: var(--text);
       border: 1px solid var(--hud-border);
     }
@@ -616,24 +579,23 @@
     }
 
     .chk-odds .o-main {
-      font-size: 14.5px;
-      font-weight: 800;
+      font-size: 14px;
+      font-weight: 600;
       color: var(--text);
     }
 
     .chk-odds .o-sub {
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 500;
       color: var(--muted);
-      text-transform: uppercase;
     }
     /* ==========================================
        BOTAO FLUTUANTE OBS & MODAL
        ========================================== */
     .obs-floating {
       position: fixed;
-      bottom: 18px;
-      right: 18px;
+      bottom: 16px;
+      right: 16px;
       z-index: 9999;
       display: flex;
       gap: 8px;
@@ -643,13 +605,13 @@
     }
 
     .obs-fab-btn.secondary {
-      background: rgba(20, 25, 36, 0.95);
+      background: var(--hud-bg);
       color: var(--hud-highlight);
-      border: 2px solid var(--hud-border);
+      border: 1px solid var(--hud-border);
     }
 
     .obs-fab-btn.secondary:hover {
-      background: rgba(35, 42, 60, 0.98);
+      background: var(--hud-row-hover);
       border-color: var(--hud-highlight);
     }
 
@@ -662,10 +624,8 @@
 
     .theme-label {
       font-size: 13px;
-      font-weight: 800;
+      font-weight: 600;
       color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
     }
 
     .theme-chips {
@@ -678,18 +638,15 @@
     .color-chip {
       width: 32px;
       height: 32px;
-      border-radius: 4px;
-      border: 2px solid rgba(255, 255, 255, 0.25);
+      border-radius: 3px;
+      border: 2px solid rgba(244, 244, 245, 0.22);
       cursor: pointer;
-      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-      transform: skewX(-8deg);
+      transition: border-color 150ms cubic-bezier(0.22, 1, 0.36, 1);
       padding: 0;
     }
 
     .color-chip:hover, .color-chip.active {
-      transform: skewX(-8deg) scale(1.15);
-      border-color: #ffffff;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+      border-color: var(--text);
     }
 
     .color-input-wrap {
@@ -699,9 +656,9 @@
       background: var(--hud-row);
       border: 1px solid var(--hud-border);
       padding: 4px 8px;
-      border-radius: 4px;
+      border-radius: 3px;
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 600;
       cursor: pointer;
     }
 
@@ -728,16 +685,14 @@
       padding: 8px 12px;
       font-family: inherit;
       font-size: 13px;
-      font-weight: 800;
-      text-transform: uppercase;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1), border-color 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1);
       text-align: center;
-      transform: skewX(-4deg);
     }
 
     .theme-btn:hover, .theme-btn.active {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.08);
       border-color: var(--hud-highlight);
       color: var(--hud-highlight);
     }
@@ -749,40 +704,39 @@
       padding: 8px;
       font-family: inherit;
       font-size: 13px;
-      font-weight: 700;
-      text-transform: uppercase;
+      font-weight: 600;
       cursor: pointer;
-      transition: color 0.15s ease, border-color 0.15s ease;
+      transition: color 150ms cubic-bezier(0.22, 1, 0.36, 1), border-color 150ms cubic-bezier(0.22, 1, 0.36, 1);
       margin-top: 4px;
     }
 
     .theme-reset-btn:hover {
-      color: #f87171;
-      border-color: #f87171;
+      color: #d97777;
+      border-color: #d97777;
     }
 
     .obs-fab-btn {
       background: var(--hud-highlight);
-      color: #0b0c10;
+      color: #111214;
       font-family: "Barlow Condensed", sans-serif;
       font-size: 15px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      border: 2px solid rgba(255, 255, 255, 0.4);
-      padding: 9px 18px;
-      transform: skewX(-8deg);
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 8px 16px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.7);
-      transition: transform 0.15s ease, background 0.15s ease;
+      gap: 6px;
+      box-shadow: 0 8px 24px rgb(0 0 0 / 0.25);
+      transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1), transform 150ms cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .obs-fab-btn:hover {
-      background: #ffe066;
-      transform: skewX(-8deg) scale(1.05);
+      background: #dfba5b;
+    }
+
+    .obs-fab-btn:active {
+      transform: scale(0.98);
     }
 
     /* ==========================================
@@ -790,18 +744,17 @@
        ========================================== */
     .radio-mini-dock {
       position: fixed;
-      bottom: 18px;
-      left: 18px;
+      bottom: 16px;
+      left: 16px;
       z-index: 9998;
       background: var(--hud-bg);
       border: 1px solid var(--hud-highlight);
-      border-radius: 4px;
-      padding: 6px 14px;
+      border-radius: 3px;
+      padding: 6px 12px;
       display: none;
       align-items: center;
       gap: 10px;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.7);
-      transform: skewX(-4deg);
+      box-shadow: 0 8px 24px rgb(0 0 0 / 0.25);
       user-select: none;
     }
 
@@ -811,54 +764,43 @@
 
     .radio-dock-label {
       font-size: 13px;
-      font-weight: 800;
+      font-weight: 600;
       color: var(--hud-highlight);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
-    .radio-dock-pulse {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #22c55e;
-      animation: livePulse 1.5s infinite;
-    }
-
     .radio-dock-btn {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.08);
       border: 1px solid var(--hud-border);
       color: var(--text);
       font-family: inherit;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 8px;
       border-radius: 3px;
       cursor: pointer;
-      text-transform: uppercase;
-      transition: background 0.15s ease;
+      transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1), border-color 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .radio-dock-btn:hover {
-      background: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.16);
       color: #fff;
     }
 
     .radio-dock-btn.danger:hover {
-      background: rgba(239, 68, 68, 0.3);
-      border-color: #ef4444;
-      color: #ef4444;
+      background: rgba(217, 119, 119, 0.2);
+      border-color: #d97777;
+      color: #d97777;
     }
 
     .radio-player-box {
       width: 100%;
       height: 200px;
-      border-radius: 4px;
+      border-radius: 3px;
       overflow: hidden;
-      background: #000;
+      background: #0b0c0e;
       border: 1px solid var(--hud-border);
       position: relative;
     }
@@ -872,8 +814,7 @@
     .obs-modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.78);
-      backdrop-filter: blur(5px);
+      background: rgba(0, 0, 0, 0.72);
       z-index: 10000;
       display: none;
       align-items: center;
@@ -886,17 +827,17 @@
     }
 
     .obs-modal-card {
-      background: #0f121b;
-      border: 2px solid rgba(250, 204, 21, 0.5);
-      border-radius: 4px;
+      background: #17181b;
+      border: 1px solid var(--hud-border);
+      border-top: 2px solid var(--hud-highlight);
+      border-radius: 3px;
       max-width: 500px;
       width: 100%;
-      padding: 22px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.85);
-      transform: skewX(-2deg);
+      gap: 12px;
+      box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
     }
 
     .obs-modal-head {
@@ -904,9 +845,8 @@
       justify-content: space-between;
       align-items: center;
       font-size: 18px;
-      font-weight: 900;
+      font-weight: 600;
       color: var(--hud-highlight);
-      text-transform: uppercase;
       border-bottom: 1px solid var(--hud-border);
       padding-bottom: 10px;
     }
@@ -920,7 +860,7 @@
     .obs-link-row {
       background: var(--hud-row);
       border: 1px solid var(--hud-border);
-      padding: 10px 14px;
+      padding: 10px 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -935,56 +875,44 @@
 
     .ol-title {
       font-size: 15px;
-      font-weight: 900;
+      font-weight: 600;
       color: var(--text);
-      text-transform: uppercase;
     }
 
     .ol-desc {
       font-size: 12px;
       color: var(--muted);
-      font-weight: 600;
+      font-weight: 500;
     }
 
     .ol-copy-bar {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: #090a0f;
-      border: 1px solid rgba(250, 204, 21, 0.45);
-      border-radius: 4px;
+      background: #111214;
+      border: 1px solid rgba(212, 168, 67, 0.45);
+      border-radius: 3px;
       color: var(--hud-highlight);
       font-family: "Barlow Condensed", sans-serif;
       font-size: 14px;
-      font-weight: 800;
-      padding: 7px 12px;
+      font-weight: 600;
+      padding: 6px 12px;
       cursor: pointer;
       white-space: nowrap;
-      transition: all 0.15s ease;
+      transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1), border-color 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1);
       user-select: none;
     }
 
     .ol-copy-bar:hover {
-      background: rgba(250, 204, 21, 0.18);
+      background: rgba(212, 168, 67, 0.16);
       border-color: var(--hud-highlight);
-      color: #fff;
-    }
-
-    .ol-copy-bar .clip-icon {
-      font-size: 15px;
-      line-height: 1;
-      display: inline-block;
-      transition: transform 0.15s ease;
-    }
-
-    .ol-copy-bar:hover .clip-icon {
-      transform: scale(1.2);
+      color: var(--text);
     }
 
     .ol-copy-bar.copied {
-      background: #22c55e !important;
-      border-color: #22c55e !important;
-      color: #0b0c10 !important;
+      background: var(--hud-green) !important;
+      border-color: var(--hud-green) !important;
+      color: #111214 !important;
     }
   </style>
 </head>
@@ -994,8 +922,7 @@
     <div class="widget-wrap" id="widgetRanking">
       <div class="w-header">
         <div class="w-title">
-          <span>🧰 RANKING DE BAÚS</span>
-          <span class="live-dot" title="Sincronizado ao vivo"></span>
+          <span>RANKING DE BAÚS</span>
         </div>
         <div class="w-stats-inline">
           <span class="hud-chip">TOTAL <b id="sumTotalChests">0</b></span>
@@ -1015,21 +942,21 @@
 
         <div class="mini-actions">
           <a id="downloadBatBtn" href="connectr.bat" download="connectr.bat" onclick="downloadConnectr(event)" class="icon-btn primary" title="Baixar connectr.bat (abre o ChestCounter.exe e sincroniza)">
-            ⬇ BAIXAR CONNECTR
+            BAIXAR CONNECTR
           </a>
-          <button class="icon-btn" onclick="copyShareLink(this)" title="Copiar link">🔗</button>
-          <button class="icon-btn" onclick="toggleRadioModal()" title="Rádio / Música (YouTube Music)">📻</button>
-          <button class="icon-btn" onclick="toggleThemeModal()" title="Personalizar Cores do Site (Navegador)">🎨</button>
-          <button class="icon-btn" onclick="toggleObsModal()" title="Links para OBS Studio (Browser Source)">🎥</button>
+          <button class="icon-btn" onclick="copyShareLink(this)" title="Copiar link" aria-label="Copiar link">Link</button>
+          <button class="icon-btn" onclick="toggleRadioModal()" title="Rádio (YouTube Music)" aria-label="Abrir rádio">Rádio</button>
+          <button class="icon-btn" onclick="toggleThemeModal()" title="Personalizar cores" aria-label="Personalizar cores">Tema</button>
+          <button class="icon-btn" onclick="toggleObsModal()" title="Links para OBS Studio" aria-label="Links para OBS Studio">OBS</button>
         </div>
       </div>
 
       <div id="rankingContainer" class="list">
-        <div class="empty">SINCRONIZANDO DADOS...</div>
+        <div class="empty">Sincronizando dados...</div>
       </div>
 
       <div class="footer-bar hide-obs">
-        <span id="statusFooter" onclick="triggerManualRefresh()" style="cursor:pointer;" title="Clique para recarregar agora">AO VIVO</span>
+        <span id="statusFooter" onclick="triggerManualRefresh()" style="cursor:pointer;" title="Recarregar agora">Carregando...</span>
       </div>
     </div>
 
@@ -1037,10 +964,10 @@
     <div class="widget-wrap" id="widgetChecklist">
       <div class="w-header">
         <div class="w-title">
-          <span>🏴‍☠️ METAS DE TESOUROS</span>
+          <span>METAS DE TESOUROS</span>
         </div>
-        <button id="thBtn" class="th-toggle" onclick="toggleTreasureHour()" title="Horários da Hora do Tesouro: Das 16h às 18h e das 23h à 1h da manhã (Clique para alternar Automático / Ligado / Desligado)">
-          🔥 HORA DO TESOURO: <span id="thStatusTxt">AUTO</span>
+        <button id="thBtn" class="th-toggle" onclick="toggleTreasureHour()" title="Horários da Hora do Tesouro: 16h às 18h e 23h à 1h (Automático / Ligado / Desligado)">
+          HORA DO TESOURO: <span id="thStatusTxt">AUTO</span>
         </button>
       </div>
 
@@ -1048,10 +975,9 @@
       <div class="pirate-goal-card">
         <div class="pg-top">
           <div class="pg-label">
-            <span>🏴‍☠️ LOJA PIRATA</span>
-            <span class="pg-tag">OBJETIVO PRINCIPAL</span>
+            <span>LOJA PIRATA</span>
           </div>
-          <span id="psOddsBadge" style="font-size:15px; font-weight:900; color:var(--text)">1 / 137.500</span>
+          <span id="psOddsBadge" style="font-size:15px; font-weight:600; color:var(--text)">1 / 137.500</span>
         </div>
 
         <div class="pg-metrics">
@@ -1070,22 +996,21 @@
       <div id="checklistContainer" class="checklist"></div>
 
       <div class="footer-bar">
-        <span>PRÊMIOS ÚNICOS NÃO REPETEM (EXCETO BUGIGANGA)</span>
-        <span class="hide-obs">CLIQUE PARA MARCAR</span>
+        <span>Prêmios únicos não repetem</span>
       </div>
     </div>
   </div>
 
   <!-- BOTOES FLUTUANTES NO CANTO DA TELA -->
   <div class="obs-floating hide-obs">
-    <button class="obs-fab-btn secondary" onclick="toggleRadioModal()" title="Rádio / Música (YouTube Music)">
-      📻 RÁDIO
+    <button class="obs-fab-btn secondary" onclick="toggleRadioModal()" title="Rádio (YouTube Music)">
+      RÁDIO
     </button>
-    <button class="obs-fab-btn secondary" onclick="toggleThemeModal()" title="Personalizar Cores do Site (Navegador)">
-      🎨 CORES
+    <button class="obs-fab-btn secondary" onclick="toggleThemeModal()" title="Personalizar cores">
+      TEMA
     </button>
     <button class="obs-fab-btn" onclick="toggleObsModal()" title="Links para OBS Studio (Browser Source)">
-      🎥 LINKS DO OBS
+      LINKS DO OBS
     </button>
   </div>
 
@@ -1093,49 +1018,49 @@
   <div id="obsModal" class="obs-modal-backdrop hide-obs" onclick="if(event.target===this) toggleObsModal()">
     <div class="obs-modal-card">
       <div class="obs-modal-head">
-        <span>🎥 LINKS PARA OBS STUDIO (OVERLAYS)</span>
-        <button class="icon-btn" onclick="toggleObsModal()">✕</button>
+        <span>LINKS PARA OBS (BROWSER SOURCE)</span>
+        <button class="icon-btn" onclick="toggleObsModal()" aria-label="Fechar">✕</button>
       </div>
-      <p class="obs-modal-sub">Cole no OBS Studio em <b>Adicionar > Navegador (Browser Source)</b> com fundo transparente:</p>
+      <p class="obs-modal-sub">Adicione como Browser Source no OBS com fundo transparente.</p>
       
       <div class="obs-link-row">
         <div class="ol-info">
-          <span class="ol-title">🧰 PAINEL COMPLETO (HUD)</span>
-          <span class="ol-desc">Ranking + Metas Loja Pirata · Tam: 1120 × 520</span>
+          <span class="ol-title">Painel completo</span>
+          <span class="ol-desc">1120 × 520</span>
         </div>
-        <button class="ol-copy-bar" onclick="copyObsUrl('', this)" title="Clique para copiar"><span class="ol-copy-label">?obs=1</span><span class="clip-icon">📋</span></button>
+        <button class="ol-copy-bar" onclick="copyObsUrl('', this)" title="Copiar link"><span class="ol-copy-label">?obs=1</span><span class="clip-icon">Copiar</span></button>
       </div>
 
       <div class="obs-link-row">
         <div class="ol-info">
-          <span class="ol-title">🏆 APENAS RANKING DE BAÚS</span>
-          <span class="ol-desc">Lista dos jogadores ao vivo · Tam: 540 × 480</span>
+          <span class="ol-title">Ranking completo</span>
+          <span class="ol-desc">540 × 480</span>
         </div>
-        <button class="ol-copy-bar" onclick="copyObsUrl('&widget=ranking', this)" title="Clique para copiar"><span class="ol-copy-label">?obs=1&widget=ranking</span><span class="clip-icon">📋</span></button>
+        <button class="ol-copy-bar" onclick="copyObsUrl('&widget=ranking', this)" title="Copiar link"><span class="ol-copy-label">?obs=1&widget=ranking</span><span class="clip-icon">Copiar</span></button>
       </div>
 
       <div class="obs-link-row">
         <div class="ol-info">
-          <span class="ol-title">📌 RANKING COMPACTO (MINI)</span>
-          <span class="ol-desc">Posição, nome, baús abertos e última partida · Tam. auto (ex: 320 × 240)</span>
+          <span class="ol-title">Ranking compacto</span>
+          <span class="ol-desc">Auto (ex: 320 × 240)</span>
         </div>
-        <button class="ol-copy-bar" onclick="copyObsUrl('&widget=compact', this)" title="Clique para copiar"><span class="ol-copy-label">?obs=1&widget=compact</span><span class="clip-icon">📋</span></button>
+        <button class="ol-copy-bar" onclick="copyObsUrl('&widget=compact', this)" title="Copiar link"><span class="ol-copy-label">?obs=1&widget=compact</span><span class="clip-icon">Copiar</span></button>
       </div>
 
       <div class="obs-link-row">
         <div class="ol-info">
-          <span class="ol-title">📻 RÁDIO / PLAYER DE MÚSICA</span>
-          <span class="ol-desc">Player de áudio em segundo plano · Tam: 480 × 280</span>
+          <span class="ol-title">Rádio YouTube Music</span>
+          <span class="ol-desc">480 × 280</span>
         </div>
-        <button class="ol-copy-bar" onclick="copyObsUrl('&widget=radio', this)" title="Clique para copiar"><span class="ol-copy-label">?obs=1&widget=radio</span><span class="clip-icon">📋</span></button>
+        <button class="ol-copy-bar" onclick="copyObsUrl('&widget=radio', this)" title="Copiar link"><span class="ol-copy-label">?obs=1&widget=radio</span><span class="clip-icon">Copiar</span></button>
       </div>
 
       <div class="obs-link-row">
         <div class="ol-info">
-          <span class="ol-title">🏴‍☠️ APENAS METAS DA LOJA PIRATA</span>
-          <span class="ol-desc">Checklist e odds do próximo baú · Tam: 540 × 520</span>
+          <span class="ol-title">Metas da Loja Pirata</span>
+          <span class="ol-desc">540 × 520</span>
         </div>
-        <button class="ol-copy-bar" onclick="copyObsUrl('&widget=checklist', this)" title="Clique para copiar"><span class="ol-copy-label">?obs=1&widget=checklist</span><span class="clip-icon">📋</span></button>
+        <button class="ol-copy-bar" onclick="copyObsUrl('&widget=checklist', this)" title="Copiar link"><span class="ol-copy-label">?obs=1&widget=checklist</span><span class="clip-icon">Copiar</span></button>
       </div>
     </div>
   </div>
@@ -1144,22 +1069,22 @@
   <div id="themeModal" class="obs-modal-backdrop hide-obs" onclick="if(event.target===this) toggleThemeModal()">
     <div class="obs-modal-card">
       <div class="obs-modal-head">
-        <span>🎨 PERSONALIZAR CORES</span>
-        <button class="icon-btn" onclick="toggleThemeModal()">✕</button>
+        <span>PERSONALIZAR TEMA</span>
+        <button class="icon-btn" onclick="toggleThemeModal()" aria-label="Fechar">✕</button>
       </div>
-      <p class="obs-modal-sub">Escolha as cores do seu HUD. As alterações são salvas <b>apenas no seu navegador</b> e não afetam outros usuários ou o OBS padrão.</p>
+      <p class="obs-modal-sub">Salvo neste navegador.</p>
 
       <div class="theme-group">
-        <span class="theme-label">Cor de Destaque (HUD Highlight):</span>
+        <span class="theme-label">Cor de destaque</span>
         <div class="theme-chips">
-          <button class="color-chip" data-color="#facc15" style="background:#facc15" onclick="setHighlightColor('#facc15')" title="Dourado Padrão"></button>
-          <button class="color-chip" data-color="#38bdf8" style="background:#38bdf8" onclick="setHighlightColor('#38bdf8')" title="Ciano Fortnite"></button>
-          <button class="color-chip" data-color="#c084fc" style="background:#c084fc" onclick="setHighlightColor('#c084fc')" title="Roxo Épico"></button>
-          <button class="color-chip" data-color="#fb923c" style="background:#fb923c" onclick="setHighlightColor('#fb923c')" title="Laranja Lendário"></button>
-          <button class="color-chip" data-color="#4ade80" style="background:#4ade80" onclick="setHighlightColor('#4ade80')" title="Verde Incomum"></button>
-          <button class="color-chip" data-color="#f43f5e" style="background:#f43f5e" onclick="setHighlightColor('#f43f5e')" title="Rosa Neon"></button>
-          <button class="color-chip" data-color="#ef4444" style="background:#ef4444" onclick="setHighlightColor('#ef4444')" title="Vermelho Alerta"></button>
-          <label class="color-input-wrap" title="Escolha qualquer cor livre">
+          <button class="color-chip" data-color="#d4a843" style="background:#d4a843" onclick="setHighlightColor('#d4a843')" title="Dourado Seco (Padrão)" aria-label="Dourado Seco"></button>
+          <button class="color-chip" data-color="#facc15" style="background:#facc15" onclick="setHighlightColor('#facc15')" title="Ouro Vivo" aria-label="Ouro Vivo"></button>
+          <button class="color-chip" data-color="#7aa2b8" style="background:#7aa2b8" onclick="setHighlightColor('#7aa2b8')" title="Ardósia" aria-label="Ardósia"></button>
+          <button class="color-chip" data-color="#c084fc" style="background:#c084fc" onclick="setHighlightColor('#c084fc')" title="Roxo" aria-label="Roxo"></button>
+          <button class="color-chip" data-color="#fb923c" style="background:#fb923c" onclick="setHighlightColor('#fb923c')" title="Laranja" aria-label="Laranja"></button>
+          <button class="color-chip" data-color="#5cb874" style="background:#5cb874" onclick="setHighlightColor('#5cb874')" title="Verde" aria-label="Verde"></button>
+          <button class="color-chip" data-color="#d97777" style="background:#d97777" onclick="setHighlightColor('#d97777')" title="Carmim" aria-label="Carmim"></button>
+          <label class="color-input-wrap" title="Cor personalizada">
             <input type="color" id="themeCustomColor" onchange="setHighlightColor(this.value)">
             <span>Livre</span>
           </label>
@@ -1167,63 +1092,58 @@
       </div>
 
       <div class="theme-group">
-        <span class="theme-label">Estilo de Fundo:</span>
+        <span class="theme-label">Fundo</span>
         <div class="theme-btn-group">
-          <button class="theme-btn" data-bg="default" onclick="setBgTheme('default')">Padrão HUD</button>
+          <button class="theme-btn" data-bg="default" onclick="setBgTheme('default')">Grafite Fosco</button>
           <button class="theme-btn" data-bg="amoled" onclick="setBgTheme('amoled')">Preto AMOLED</button>
-          <button class="theme-btn" data-bg="midnight" onclick="setBgTheme('midnight')">Meia-Noite</button>
-          <button class="theme-btn" data-bg="cyberpunk" onclick="setBgTheme('cyberpunk')">Cyberpunk</button>
+          <button class="theme-btn" data-bg="midnight" onclick="setBgTheme('midnight')">Azul Noturno</button>
+          <button class="theme-btn" data-bg="cyberpunk" onclick="setBgTheme('cyberpunk')">Roxo Escuro</button>
         </div>
       </div>
 
-      <button class="theme-reset-btn" onclick="resetThemeColors()">↺ Restaurar Cores Padrão</button>
+      <button class="theme-reset-btn" onclick="resetThemeColors()">Restaurar padrão</button>
     </div>
   </div>
 
   <!-- DOCK FLUTUANTE DE ÁUDIO QUANDO A RÁDIO ESTÁ MINIMIZADA -->
   <div id="radioMiniDock" class="radio-mini-dock hide-obs">
     <div class="radio-dock-label">
-      <span class="radio-dock-pulse"></span>
-      <span>📻 RÁDIO AO VIVO (MUTADA)</span>
+      <span>Rádio ativa (mutada)</span>
     </div>
-    <button class="radio-dock-btn" onclick="openRadioModal()" title="Abrir painel da rádio e desmutar">⛶ ABRIR / DESMUTAR</button>
-    <button class="radio-dock-btn danger" onclick="stopRadio()" title="Parar rádio">✕ PARAR</button>
+    <button class="radio-dock-btn" onclick="openRadioModal()" title="Abrir player">Abrir</button>
+    <button class="radio-dock-btn danger" onclick="stopRadio()" title="Parar rádio">Parar</button>
   </div>
 
   <!-- MODAL / PAINEL DA RÁDIO YOUTUBE MUSIC -->
   <div id="radioModal" class="obs-modal-backdrop hide-obs" onclick="if(event.target===this) minimizeRadioModal()">
     <div class="obs-modal-card" style="max-width: 500px;">
       <div class="obs-modal-head">
-        <span>📻 RÁDIO · YOUTUBE MUSIC</span>
+        <span>RÁDIO YOUTUBE MUSIC</span>
         <div style="display: flex; gap: 6px;">
-          <button class="icon-btn" onclick="minimizeRadioModal()" title="Minimizar (continua tocando no fundo)">🗕</button>
-          <button class="icon-btn" onclick="stopRadio()" title="Fechar e parar música">✕</button>
+          <button class="icon-btn" onclick="minimizeRadioModal()" title="Minimizar" aria-label="Minimizar">_</button>
+          <button class="icon-btn" onclick="stopRadio()" title="Fechar e parar" aria-label="Fechar">✕</button>
         </div>
       </div>
-      <p class="obs-modal-sub">Toque suas músicas do <b>YouTube Music</b> em tempo real. O link colocado aqui sincroniza com <b>todas as instâncias e transmissões abertas</b> simultaneamente!</p>
-      <p style="font-size:12px; color:var(--hud-highlight); font-weight:700; margin-top:-6px;">🔇 Reprodução mutada por padrão. Clique no controle de volume do player para desmutar quando quiser ouvir.</p>
+      <p class="obs-modal-sub">O link sincroniza entre as instâncias abertas e inicia mutado por padrão.</p>
 
       <div class="radio-player-box">
         <div id="radioPlaceholder" style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; color:var(--muted); text-align:center; padding:12px;">
-          <span style="font-size:28px;">📻</span>
-          <span style="font-size:13px; font-weight:700;">NENHUMA PLAYLIST CARREGADA</span>
-          <span style="font-size:11px;">Cole o link da sua playlist ou rádio do YouTube Music abaixo e clique em Carregar.</span>
+          <span style="font-size:14px; font-weight:600;">Nenhuma playlist carregada.</span>
         </div>
         <iframe id="radioIframe" style="display:none;" allow="autoplay; encrypted-media"></iframe>
       </div>
 
       <div class="theme-group">
-        <span class="theme-label">Link da sua Playlist / Rádio (YouTube Music):</span>
+        <label for="radioUrlInput" class="theme-label">Playlist do YouTube Music</label>
         <div style="display:flex; gap:6px;">
-          <input type="text" id="radioUrlInput" placeholder="https://music.youtube.com/playlist?list=..." style="flex:1; background:var(--hud-row); border:1px solid var(--hud-border); color:#fff; padding:8px 10px; font-family:inherit; font-size:13px; border-radius:4px; outline:none;">
-          <button class="obs-fab-btn" onclick="applyRadioUrlFromInput()" style="padding:7px 14px; font-size:13px;">CARREGAR</button>
+          <input type="text" id="radioUrlInput" placeholder="https://music.youtube.com/playlist?list=..." style="flex:1; background:var(--hud-row); border:1px solid var(--hud-border); color:var(--text); padding:8px 10px; font-family:inherit; font-size:13px; border-radius:3px; outline:none;">
+          <button class="obs-fab-btn" onclick="applyRadioUrlFromInput()" style="padding:6px 14px; font-size:13px;">CARREGAR</button>
         </div>
-        <span style="font-size:11px; color:var(--muted);">Dica: No YouTube Music, abra sua playlist ou mix, copie o link do navegador e cole aqui.</span>
       </div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-        <button class="theme-reset-btn" style="margin-top:0;" onclick="loadDefaultRadio()">↺ Usar Rádio Lofi/Gaming</button>
-        <button class="radio-dock-btn" onclick="minimizeRadioModal()">🗕 Minimizar no Rodapé</button>
+        <button class="theme-reset-btn" style="margin-top:0;" onclick="loadDefaultRadio()">Usar rádio padrão</button>
+        <button class="radio-dock-btn" onclick="minimizeRadioModal()">Minimizar</button>
       </div>
     </div>
   </div>
@@ -1288,7 +1208,6 @@
     const PRIZE_DEFS = [
       {
         key: 'goldOutfit',
-        icon: '👑',
         name: 'Skin Semanal de Ouro (Lil Uzi Vert)',
         baseDenom: 1562500,
         specialDenom: 208333,
@@ -1297,7 +1216,6 @@
       },
       {
         key: 'pirateShop',
-        icon: '🏴‍☠️',
         name: 'Acesso à Loja Pirata',
         baseDenom: 137500,
         specialDenom: 91667,
@@ -1307,7 +1225,6 @@
       },
       {
         key: 'vehicle',
-        icon: '🚗',
         name: 'Veículo Semanal (Cadillac CT5-V)',
         baseDenom: 7813,
         specialDenom: 781,
@@ -1316,7 +1233,6 @@
       },
       {
         key: 'pickaxe',
-        icon: '⛏️',
         name: 'Picareta / Acessório Costas',
         baseDenom: 568,
         thBoost: 1,
@@ -1324,7 +1240,6 @@
       },
       {
         key: 'jamTrack',
-        icon: '🎵',
         name: 'Música ("London")',
         baseDenom: 391,
         thBoost: 1,
@@ -1332,7 +1247,6 @@
       },
       {
         key: 'loadingScreen',
-        icon: '🖼️',
         name: 'Tela ("So Kawaii")',
         baseDenom: 272,
         thBoost: 1,
@@ -1340,7 +1254,6 @@
       },
       {
         key: 'gizmo',
-        icon: '🤖',
         name: 'Bugiganga (Gizmo)',
         baseDenom: 127,
         thBoost: 1,
@@ -1387,40 +1300,40 @@
        PERSONALIZACAO DE CORES (LOCALSTORAGE)
        ========================================== */
     const DEFAULT_THEME = {
-      highlight: '#facc15',
+      highlight: '#d4a843',
       bgTheme: 'default'
     };
 
     const BG_THEMES = {
       default: {
-        bodyBg: '#090b10',
-        hudBg: 'rgba(12, 15, 22, 0.90)',
-        hudRow: 'rgba(20, 25, 36, 0.88)',
-        hudRowHover: 'rgba(28, 35, 50, 0.95)'
+        bodyBg: '#111214',
+        hudBg: 'rgba(23, 24, 27, 0.94)',
+        hudRow: 'rgba(30, 32, 37, 0.94)',
+        hudRowHover: 'rgba(40, 43, 50, 0.98)'
       },
       amoled: {
         bodyBg: '#000000',
-        hudBg: 'rgba(7, 7, 7, 0.95)',
-        hudRow: 'rgba(18, 18, 18, 0.92)',
-        hudRowHover: 'rgba(30, 30, 30, 0.98)'
+        hudBg: 'rgba(10, 10, 12, 0.96)',
+        hudRow: 'rgba(18, 18, 20, 0.94)',
+        hudRowHover: 'rgba(28, 28, 32, 0.98)'
       },
       midnight: {
-        bodyBg: '#030712',
-        hudBg: 'rgba(15, 23, 42, 0.92)',
-        hudRow: 'rgba(30, 41, 59, 0.88)',
-        hudRowHover: 'rgba(51, 65, 85, 0.95)'
+        bodyBg: '#0a0f18',
+        hudBg: 'rgba(16, 23, 36, 0.94)',
+        hudRow: 'rgba(24, 34, 52, 0.92)',
+        hudRowHover: 'rgba(34, 48, 72, 0.96)'
       },
       cyberpunk: {
-        bodyBg: '#0a0014',
-        hudBg: 'rgba(23, 7, 43, 0.92)',
-        hudRow: 'rgba(38, 13, 71, 0.88)',
-        hudRowHover: 'rgba(60, 22, 110, 0.95)'
+        bodyBg: '#110b18',
+        hudBg: 'rgba(24, 15, 34, 0.94)',
+        hudRow: 'rgba(34, 22, 48, 0.92)',
+        hudRowHover: 'rgba(48, 32, 68, 0.96)'
       }
     };
 
     function getSavedTheme() {
       try {
-        const raw = localStorage.getItem('fortnite_chest_hud_theme_v1');
+        const raw = localStorage.getItem('fortnite_chest_hud_theme_v2');
         return raw ? { ...DEFAULT_THEME, ...JSON.parse(raw) } : { ...DEFAULT_THEME };
       } catch (e) {
         return { ...DEFAULT_THEME };
@@ -1429,7 +1342,7 @@
 
     function saveTheme(theme) {
       try {
-        localStorage.setItem('fortnite_chest_hud_theme_v1', JSON.stringify(theme));
+        localStorage.setItem('fortnite_chest_hud_theme_v2', JSON.stringify(theme));
       } catch (e) {}
     }
 
@@ -1574,12 +1487,12 @@
       const input = document.getElementById('radioUrlInput');
       const rawUrl = input ? input.value.trim() : '';
       if (!rawUrl) {
-        alert('Por favor, cole o link da sua playlist ou rádio do YouTube Music.');
+        alert('Cole o link da playlist do YouTube Music.');
         return;
       }
       const embedUrl = parseYouTubeMusicUrl(rawUrl);
       if (!embedUrl) {
-        alert('Não foi possível identificar a playlist deste link. Certifique-se de que é um link válido do YouTube Music.');
+        alert('Link do YouTube Music inválido.');
         return;
       }
 
@@ -1663,10 +1576,10 @@
         const labelEl = btn ? btn.querySelector('.ol-copy-label') : null;
         const iconEl = btn ? btn.querySelector('.clip-icon') : null;
         const prevLabel = labelEl ? labelEl.textContent : '';
-        const prevIcon = iconEl ? iconEl.textContent : '📋';
+        const prevIcon = iconEl ? iconEl.textContent : 'Copiar';
 
         if (btn) btn.classList.add('copied');
-        if (labelEl) labelEl.textContent = 'COPIADO!';
+        if (labelEl) labelEl.textContent = 'COPIADO';
         if (iconEl) iconEl.textContent = '✓';
 
         setTimeout(() => {
@@ -1872,7 +1785,6 @@
             <div class="chk-row" style="cursor:default">
               <div class="chk-box" style="color:var(--muted)">∞</div>
               <div class="chk-name">
-                <span>${def.icon}</span>
                 <span class="n-txt">${def.name}</span>
                 <span class="pill">OBTIDOS: ${autoDetected.gizmosCount}× (REPETE)</span>
               </div>
@@ -1888,7 +1800,6 @@
           <div class="chk-row ${done ? 'done' : ''}" onclick="togglePrizeCheck('${def.key}', ${done})">
             <div class="chk-box">${done ? '✓' : ''}</div>
             <div class="chk-name">
-              <span>${def.icon}</span>
               <span class="n-txt">${def.name}</span>
               ${hasBoost ? `<span class="pill">BÔNUS ${boostMultiplier}×</span>` : ''}
               ${done ? '<span class="pill">OBTIDO</span>' : ''}
@@ -1976,7 +1887,7 @@
 
       const container = document.getElementById('rankingContainer');
       if (players.length === 0) {
-        container.innerHTML = `<div class="empty">ABRA O CONNECTR.BAT PARA SINCRONIZAR!</div>`;
+        container.innerHTML = `<div class="empty">Abra o connectr.bat para sincronizar.</div>`;
         return;
       }
 
@@ -1996,8 +1907,8 @@
              <span>MÉD: <b>${p.avgChests || 0}</b></span>
              ${p.manualBonus ? `<span>· MANUAL: <b>+${p.manualBonus}</b></span>` : ''}
              ${lastChests ? `<span>· ${lastChests}</span>` : ''}
-             ${p.wins ? `<span>· 👑 <b>${p.wins}</b></span>` : ''}
-             ${p.treasuresCount ? `<span>· ★ <b>${p.treasuresCount}</b></span>` : ''}`;
+             ${p.wins ? `<span>· VIT: <b>${p.wins}</b></span>` : ''}
+             ${p.treasuresCount ? `<span>· TES: <b>${p.treasuresCount}</b></span>` : ''}`;
 
         return `
           <div>
@@ -2006,7 +1917,7 @@
               <div class="p-info">
                 <div class="p-top">
                   <span class="p-name">${escapeHtml(p.player)}</span>
-                  ${p.inProgress ? '<span class="badge-live">● EM PARTIDA</span>' : ''}
+                  ${p.inProgress ? '<span class="badge-live">EM PARTIDA</span>' : ''}
                 </div>
                 <div class="p-sub">${subHtml}</div>
               </div>
@@ -2018,7 +1929,7 @@
 
             <div class="drawer ${isOpen ? 'open' : ''}">
               <div class="drawer-head">
-                <span>ÚLTIMAS 5 PARTIDAS (${p.matchesCount || 0} NO TOTAL${p.manualBonus ? ` · AUTO: ${p.baseChests} + MANUAL: ${p.manualBonus}` : ''})</span>
+                <span>ÚLTIMAS 5 PARTIDAS (${p.matchesCount || 0} NO TOTAL${p.manualBonus ? `, AUTO: ${p.baseChests}, MANUAL: ${p.manualBonus}` : ''})</span>
                 <span style="cursor:pointer" onclick="removePlayer(event, '${p.id}', '${escapeHtml(p.player)}')">✕ REMOVER</span>
               </div>
               <table class="mini-table">
@@ -2026,8 +1937,8 @@
                   ${(p.recentMatches || []).filter(m => !m.player || m.player.toLowerCase() === (p.player || '').toLowerCase()).slice(0, 5).map(m => `
                     <tr>
                       <td>${escapeHtml((m.date || '').slice(5))}</td>
-                      <td>${m.placement === 1 ? '👑 VITÓRIA ROYALE' : `${m.placement}º LUGAR`}</td>
-                      <td>${m.treasures ? `★ ${escapeHtml(m.treasures)}` : ''}</td>
+                      <td>${m.placement === 1 ? 'VITÓRIA' : `${m.placement}º LUGAR`}</td>
+                      <td>${m.treasures ? escapeHtml(m.treasures) : ''}</td>
                       <td class="c-chests">${m.chests} BAÚS</td>
                     </tr>
                   `).join('')}
@@ -2077,7 +1988,7 @@
       const mins = Math.floor(refreshCountdown / 60);
       const secs = refreshCountdown % 60;
       const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-      footerEl.innerHTML = `${count} JOGADOR(ES) · RECARREGA EM <b>${timeStr}</b>`;
+      footerEl.innerHTML = `${count} jogador(es), atualiza em <b>${timeStr}</b>`;
     }
 
     function triggerManualRefresh() {
@@ -2085,7 +1996,7 @@
       const footerEl = document.getElementById('statusFooter');
       if (footerEl) {
         const count = (currentState.players || []).length;
-        footerEl.innerHTML = `${count} JOGADOR(ES) · <b>RECARREGANDO...</b>`;
+        footerEl.innerHTML = `${count} jogador(es), <b>recarregando...</b>`;
       }
       loadRanking();
     }
