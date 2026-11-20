@@ -103,8 +103,8 @@ function Classify-Prizes($treasuresList) {
         elseif ($raw -match 'music track|jam track|no trespassing|london|dpid_item4|dpid_item16') { $prizes.jamTrack = $true }
         elseif ($raw -match 'pickaxe|back bling|diamond and gold|gauntlet|dpid_item1|dpid_item18') { $prizes.pickaxe = $true }
         elseif ($raw -match 'vehicle|mercedes|cadillac|dpid_item3|dpid_item15') { $prizes.vehicle = $true }
-        elseif ($raw -match 'pirate shop|shop') { $prizes.pirateShop = $true }
-        elseif ($raw -match 'gold outfit|outfit|skin|uzi') { $prizes.goldOutfit = $true }
+        elseif ($raw -match 'pirate shop|shop|ticket|bilhete') { $prizes.pirateShop = $true }
+        elseif ($raw -match 'gold outfit|outfit|skin|uzi|miku|hatsune') { $prizes.goldOutfit = $true }
         elseif ($raw -notmatch '^\d+$') { $prizes.gizmosCount++ }
     }
     return $prizes
